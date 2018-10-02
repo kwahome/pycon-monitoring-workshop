@@ -115,4 +115,5 @@ logs
 
 # IDE stuff
 .idea/
+.idea
 .vscode/
