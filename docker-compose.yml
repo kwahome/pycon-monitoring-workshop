@@ -1,0 +1,15 @@
+version: '3'
+services:
+  web:
+    build: .
+#    depends_on:
+#      -
+#    command:
+#    environment:
+#      -
+    volumes:
+      - .:/usr/src/app
+    ports:
+      - 8001:5000
+#    links:
+#      -

@@ -1,0 +1,32 @@
+<component name="InspectionProjectProfileManager">
+  <profile version="1.0">
+    <option name="myName" value="Project Default" />
+    <inspection_tool class="PyPackageRequirementsInspection" enabled="true" level="WARNING" enabled_by_default="true">
+      <option name="ignoredPackages">
+        <value>
+          <list size="19">
+            <item index="0" class="java.lang.String" itemvalue="psycopg2" />
+            <item index="1" class="java.lang.String" itemvalue="pytz" />
+            <item index="2" class="java.lang.String" itemvalue="django-ussd" />
+            <item index="3" class="java.lang.String" itemvalue="coverage" />
+            <item index="4" class="java.lang.String" itemvalue="PyYAML" />
+            <item index="5" class="java.lang.String" itemvalue="setuptools" />
+            <item index="6" class="java.lang.String" itemvalue="wsgiref" />
+            <item index="7" class="java.lang.String" itemvalue="requests" />
+            <item index="8" class="java.lang.String" itemvalue="django-hash-password" />
+            <item index="9" class="java.lang.String" itemvalue="django-extensions" />
+            <item index="10" class="java.lang.String" itemvalue="structlog" />
+            <item index="11" class="java.lang.String" itemvalue="celery" />
+            <item index="12" class="java.lang.String" itemvalue="Django" />
+            <item index="13" class="java.lang.String" itemvalue="django-test-exclude" />
+            <item index="14" class="java.lang.String" itemvalue="mock" />
+            <item index="15" class="java.lang.String" itemvalue="djangorestframework" />
+            <item index="16" class="java.lang.String" itemvalue="raven" />
+            <item index="17" class="java.lang.String" itemvalue="datadog" />
+            <item index="18" class="java.lang.String" itemvalue="prometheus_client" />
+          </list>
+        </value>
+      </option>
+    </inspection_tool>
+  </profile>
+</component>
