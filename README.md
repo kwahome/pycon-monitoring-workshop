@@ -79,4 +79,4 @@ Please read [CONTRIBUTING.md](https://github.com/kwahome/pycon-monitoring-worksh
 We use [SemVer](https://semver.org/) for versioning. For the versions available, see the tags on this repository.
 
 ## License
-
+This software is licensed under the MIT License. See the [LICENSE](https://github.com/kwahome/pycon-monitoring-workshop/blob/master/LICENSE) file in the top distribution directory for the full license text.
