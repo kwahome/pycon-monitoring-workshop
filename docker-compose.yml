@@ -10,6 +10,6 @@ services:
     volumes:
       - .:/usr/src/app
     ports:
-      - 8001:5000
+      - 5001:5000
 #    links:
 #      -
