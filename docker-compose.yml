@@ -1,15 +1,54 @@
 version: '3'
 services:
+  nginx:
+    build:
+      context: .
+      dockerfile: ./devops/docker/Nginx.Dockerfile
+    links:
+      - app:app
+    volumes:
+      - ./:/usr/src/app
+    depends_on:
+      - app
+    ports:
+      - 80:80
+
   app:
     build: .
-#    depends_on:
-#      -
-#    command:
+    depends_on:
+      - rabbitmq
+      - db
 #    environment:
 #      -
     volumes:
-      - .:/usr/src/app
+      - ./:/usr/src/app
+      - /static
+      - /var/log
+      - /var/log/nginx
     ports:
-      - 5001:5000
-#    links:
-#      -
+      - 5000
+    links:
+      - rabbitmq:rabbitmq
+      - db:db
+
+  rabbitmq:
+    image: rabbitmq:3-management
+    ports:
+      - 5672:5672  # we forward this port because it's useful for debugging
+      - 15672:15672  # here, we can access rabbitmq management plugin
+
+  db:
+    image: postgres:10
+    ports:
+      - 5432:5432
+
+  redis:
+    image: redis:3.2.10-alpine
+    ports:
+      - 6379:6379
+
+  smpp_simulator:
+    image: komuw/smpp_server:v0.2
+    ports:
+      - 2775:2775
+      - 8884:8884
