@@ -18,8 +18,14 @@ services:
     depends_on:
       - rabbitmq
       - db
-#    environment:
-#      -
+    command: bash -c "./devops/scripts/wait-for-it.sh -t 120 db:5432 && ./devops/scripts/start.sh env=development"
+    environment:
+      - ENVIRONMENT=development
+      - DB_USER=notifications_app
+      - DB_PASS=P@55w0rd
+      - DB_NAME=notifications_app
+      - DB_HOST=db
+      - DB_PORT=5432
     volumes:
       - ./:/usr/src/app
       - /static
@@ -38,9 +44,13 @@ services:
       - 15672:15672  # here, we can access rabbitmq management plugin
 
   db:
-    image: postgres:10
+    image: postgres:9.5
     ports:
       - 5432:5432
+    environment:
+      - POSTGRES_DB=notifications_app
+      - POSTGRES_USER=notifications_app
+      - POSTGRES_PASSWORD=P@55w0rd
 
   redis:
     image: redis:3.2.10-alpine

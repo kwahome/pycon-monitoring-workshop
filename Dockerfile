@@ -9,7 +9,6 @@ WORKDIR /usr/src/app
 
 RUN pip install -r requirements/base.txt
 
-EXPOSE 80
-EXPOSE 443
+EXPOSE 5000
 
 CMD ./devops/scripts/start.sh
