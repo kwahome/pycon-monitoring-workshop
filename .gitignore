@@ -110,7 +110,6 @@ flask/
 *.pid
 logs
 
-*.conf
 *.retry
 
 # IDE stuff
