@@ -31,9 +31,15 @@ A sample payload to the notifications endpoint:
 }
 ```
 
-Below is an overall architectural diagram:
+Below are the overall architectural and sequence diagrams:
+
+###### 1. Architectural overview
 
 ![](docs/architecture-diagram.png)
+
+###### 2. Sequence diagram
+
+![](docs/messaging-service-sequence.png)
 
 ## Getting Started
 
