@@ -20,3 +20,4 @@ class Notification(BaseModel):
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     payload = db.Column(db.String(255), unique=True, nullable=False)
     date_created = db.Column(db.DateTime, nullable=False)
+    date_updated = db.Column(db.DateTime, nullable=False)

@@ -113,6 +113,6 @@ logs
 *.retry
 
 # IDE stuff
+.idea/*
 .idea/
-.idea
 .vscode/

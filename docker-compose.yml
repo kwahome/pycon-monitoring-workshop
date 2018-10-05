@@ -28,7 +28,7 @@ services:
       - DB_PORT=5432
     volumes:
       - ./:/usr/src/app
-      - /static
+      - /app/static
       - /var/log
       - /var/log/nginx
     ports:
