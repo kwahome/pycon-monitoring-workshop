@@ -14,10 +14,10 @@ Metrics, monitoring, and alerting are thus interleaved concepts that together fo
 - Important qualities of a Metrics, Monitoring, and Alerting System
 - Designing/architecting applications for monitoring & observability
 
-## Notifications Service
-To adequately demonstrate implementation of a monitoring system in a python application/service and to achieve the workshop's objectives, a notification service has been built.
+## Messaging Service
+To adequately demonstrate implementation of a monitoring system in a python application/service and to achieve the workshop's objectives, a messaging service has been built.
 
-The service is designed to handle notifications messages of varying kind (push, SMS) and priority and in varying quantities.
+The service is designed to handle messages of varying kind (push, SMS) and priority and in varying quantities.
 
 A sample payload to the notifications endpoint:
 
@@ -30,6 +30,10 @@ A sample payload to the notifications endpoint:
     "sender_id": "88888"
 }
 ```
+
+Below is an overall architectural diagram:
+
+![](docs/architecture-diagram.png)
 
 ## Getting Started
 

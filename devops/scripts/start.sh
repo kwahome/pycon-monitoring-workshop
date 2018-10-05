@@ -7,17 +7,22 @@ export FLASK_APP=app
 export FLASK_ENV=${environment}
 
 MIGRATIONS_DIR=migrations
-LOG_TAG="INFO  [start.sh]"
+INFO_LOG_TAG="INFO  [start.sh] "
+
+logger(){
+    echo "$INFO_LOG_TAG $1"
+}
 
 if [ -d "$MIGRATIONS_DIR" ]; then
-    echo "$LOG_TAG migrations already initiliazed..."
+    logger "migrations already initiliazed..."
 else
-    echo "$LOG_TAG initializing migrations..."
+    logger "initializing migrations..."
     python manage.py db init
 fi
-echo "$LOG_TAG generating migrations file..."
+logger "generating migrations file..."
 python manage.py db migrate
-echo "$LOG_TAG applying migrations..."
+logger "applying migrations..."
 python manage.py db upgrade
-
+logger "starting flask app in environment='$environment'..."
+logger " "
 python manage.py run
