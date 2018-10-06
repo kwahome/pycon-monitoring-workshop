@@ -1,0 +1,103 @@
+definitions:
+  Header:
+    type: object
+    properties:
+      messageId:
+        type: string
+      timestamp:
+        type: string
+        format: date-time
+      responseStatus:
+        $ref: "#/definitions/Status"
+      groupId:
+        type: string
+      referenceId:
+        type: string
+      batch:
+        $ref: "#/definitions/Batch"
+    required:
+      - messageId
+      - timestamp
+
+  Status:
+    type: object
+    properties:
+      status:
+        type: string
+      errorCode:
+        type: string
+      errorMessage:
+        type: string
+    required:
+      - status
+
+  Batch:
+    type: object
+    properties:
+      batchId:
+        type: string
+      messageSequenceNumber:
+        type: integer
+        format: int32
+      totalMessages:
+        type: integer
+        format: int32
+    required:
+      - batchId
+      - messageSequenceNumber
+      - totalMessages
+
+  Amount:
+    type: object
+    properties:
+      value:
+        type: integer
+        format: int64
+      currency:
+        type: string
+      precision:
+        type: integer
+        format: int32
+    required:
+      - value
+      - currency
+      - precision
+
+parameters:
+   messageId:
+      name: messageId
+      in: header
+      description: Message ID of the message, should be a GUID that matches the same field in the header.
+      required: true
+      type: string
+   timestamp:
+       name: timestamp
+       in: header
+       description: Time message was sent
+       required: true
+       type: string
+       format: date-time
+   groupId:
+      name: groupId
+      in: header
+      description: ID used to group related messages, should be a GUID that matches the same field in the header.
+      required: false
+      type: string
+   correlationId:
+      name: correlationId
+      in: header
+      description: ID used to match request and response messages.
+      required: false
+      type: string
+   returnAddress:
+      name: returnAddress
+      in: header
+      description: Delivery address for the response message.
+      required: false
+      type: string
+   priority:
+      name: priority
+      in: header
+      description: Priority of the message.
+      required: false
+      type: string

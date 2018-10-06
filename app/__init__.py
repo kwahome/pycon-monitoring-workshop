@@ -1,18 +1,21 @@
 from flask import Flask
-from flask_sqlalchemy import SQLAlchemy
 from config import config_by_name
+from flask_bcrypt import Bcrypt
+from flask_restful import Api
 
-db = SQLAlchemy()
+flask_bcrypt = Bcrypt()
 
 
 def create_app(environment):
     app = Flask(__name__, instance_relative_config=True)
     app.config.from_object(config_by_name[environment])
+    flask_bcrypt.init_app(app)
+
+    from app.api.model import db
     db.init_app(app)
 
-    # a simple page that says hello
-    @app.route('/hello')
-    def hello():
-        return 'Hello, World!'
+    from app.api.views import SendMessageView
+    api = Api(app)
+    api.add_resource(SendMessageView, '/api/v1.0/sendMessage')
 
-    return app
+    return app, db

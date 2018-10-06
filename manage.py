@@ -3,12 +3,11 @@ import unittest
 
 from flask_script import Manager
 from flask_migrate import Migrate, MigrateCommand
-from app import create_app, db
-from app.models import Notification
+from app import create_app
 
 environment = os.environ['ENVIRONMENT']
 
-app = create_app(environment=environment)
+app, db = create_app(environment=environment)
 
 app.app_context().push()
 
@@ -21,7 +20,7 @@ manager.add_command('db', MigrateCommand)
 @manager.command
 def run():
     """
-    Start flask app binding to any host
+    Start flask app binding to all public IPs
     """
     app.run(host='0.0.0.0')
 
@@ -31,7 +30,7 @@ def test():
     """
     Runs the unit tests.
     """
-    tests = unittest.TestLoader().discover('tests', pattern='*test*.py')
+    tests = unittest.TestLoader().discover('.', pattern='*test*.py')
     result = unittest.TextTestRunner(verbosity=2).run(tests)
     if result.wasSuccessful():
         return 0

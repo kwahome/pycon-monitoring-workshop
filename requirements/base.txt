@@ -1,7 +1,11 @@
 Flask==1.0.2
 Celery==4.2.0
 naz
-flask-sqlalchemy
+flask-bcrypt
 flask-migrate
+Flask-RESTful
 flask-script
+flask-sqlalchemy
+flask_testing
 psycopg2-binary
+pyjwt

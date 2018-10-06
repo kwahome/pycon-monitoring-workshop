@@ -14,7 +14,9 @@ services:
       - 80:80
 
   app:
-    build: .
+    build:
+      context: .
+      dockerfile: ./devops/docker/Dockerfile
     depends_on:
       - rabbitmq
       - db
@@ -57,8 +59,21 @@ services:
     ports:
       - 6379:6379
 
-  smpp_simulator:
+  smpp-simulator:
     image: komuw/smpp_server:v0.2
     ports:
       - 2775:2775
       - 8884:8884
+
+  swagger-ui:
+    build:
+      context: .
+      dockerfile: ./devops/docker/SwaggerUI.Dockerfile
+    environment:
+      - FOLDER=./docs/api/swagger
+      - SWAGGER_JSON=/docs/api/swagger/swagger/send-message.yml
+      - API_URL=http://localhost:9001/docs/api/swagger/send-message-1.0.yml
+    ports:
+      - 9001:8080
+    volumes:
+      - ./docs/api/swagger:/docs/api/swagger

@@ -1,0 +1,73 @@
+swagger: '2.0'
+info:
+  description: Send message API
+  version: 1.0
+  title: Send message API
+  termsOfService: ''
+  contact:
+    email: kevowahome@gmail.com
+host: "<HOST>"
+basePath: /api/messages/v1/
+schemes:
+  - https
+  - http
+paths:
+  /sendMessage:
+    post:
+      tags:
+        - Send a new message
+      summary: Send a new message
+      description: Send a new message
+      operationId: sendMessage
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      parameters:
+        - $ref: './common-1.0.yml#/parameters/messageId'
+        - $ref: './common-1.0.yml#/parameters/timestamp'
+        - name: body
+          in: body
+          description: Register a new customer
+          schema:
+            $ref: '#/definitions/SendMessageRequest'
+      responses:
+        '201':
+          description: A successful registration
+          schema:
+            $ref: '#/definitions/SendMessageResponse'
+        '400':
+          description: Invalid input
+definitions:
+  SendMessageRequest:
+    type: object
+    required:
+      - customerIdentifier
+      - productCode
+      - language
+    properties:
+      header:
+        $ref: './common-1.0.yml#/definitions/Header'
+      customerIdentifier:
+        type: string
+        example: '254733444555'
+      productCode:
+        type: string
+        example: airtel-ke
+      product:
+        type: string
+        example: cash
+      language:
+        type: string
+        example: en
+
+  SendMessageResponse:
+      type: object
+      required:
+        - header
+      properties:
+        header:
+           $ref: './common-1.0.yml#/definitions/Header'
+externalDocs:
+  description: Find out more about Swagger
+  url: 'http://swagger.io'

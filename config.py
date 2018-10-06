@@ -1,10 +1,15 @@
 import os
 
+BASE_DIR = os.path.abspath(os.path.dirname(__file__))
+
 
 class Config:
+    """
+    Base configuration class
+    """
     DEBUG = False
 
-    BASE_DIR = os.path.abspath(os.path.dirname(__file__))
+    BASE_DIR = BASE_DIR
 
     SECRET_KEY = os.getenv('SECRET_KEY', 'secret-key')
 
@@ -23,18 +28,30 @@ class Config:
 
 
 class DevelopmentConfig(Config):
+    """
+    Development environment configuration class
+    """
     DEBUG = True
 
 
 class TestingConfig(Config):
+    """
+    Testing environment configuration class
+    """
     DEBUG = True
 
 
-class StagingConfig(Config):
+class ProductionConfig(Config):
+    """
+    Production environment configuration class
+    """
     pass
 
 
-class ProductionConfig(Config):
+class StagingConfig(Config):
+    """
+    Staging environment configuration class
+    """
     pass
 
 

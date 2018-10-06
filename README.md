@@ -35,11 +35,11 @@ Below are the overall architectural and sequence diagrams:
 
 ###### 1. Architectural overview
 
-![](docs/architecture-diagram.png)
+![](docs/architecture/architecture-diagram.png)
 
 ###### 2. Sequence diagram
 
-![](docs/messaging-service-sequence.png)
+![](docs/architecture/messaging-service-sequence.png)
 
 ## Getting Started
 
