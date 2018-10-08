@@ -1,11 +1,8 @@
-Flask==1.0.2
 Celery==4.2.0
+Django==2.1.2
+django-annoying==0.8.0
+django-extensions
+djangorestframework==3.8.2
 naz
-flask-bcrypt
-flask-migrate
-Flask-RESTful
-flask-script
-flask-sqlalchemy
-flask_testing
 psycopg2-binary
-pyjwt
+structlog==18.1.0

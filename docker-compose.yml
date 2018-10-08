@@ -5,15 +5,15 @@ services:
       context: .
       dockerfile: ./devops/docker/Nginx.Dockerfile
     links:
-      - app:app
+      - web:web
     volumes:
       - ./:/usr/src/app
     depends_on:
-      - app
+      - web
     ports:
       - 80:80
 
-  app:
+  web:
     build:
       context: .
       dockerfile: ./devops/docker/Dockerfile
@@ -23,9 +23,9 @@ services:
     command: bash -c "./devops/scripts/wait-for-it.sh -t 120 db:5432 && ./devops/scripts/start.sh env=development"
     environment:
       - ENVIRONMENT=development
-      - DB_USER=notifications_app
+      - DB_USER=messaging-service
       - DB_PASS=P@55w0rd
-      - DB_NAME=notifications_app
+      - DB_NAME=messaging-service
       - DB_HOST=db
       - DB_PORT=5432
     volumes:
@@ -34,7 +34,7 @@ services:
       - /var/log
       - /var/log/nginx
     ports:
-      - 5000
+      - 80
     links:
       - rabbitmq:rabbitmq
       - db:db
@@ -50,8 +50,8 @@ services:
     ports:
       - 5432:5432
     environment:
-      - POSTGRES_DB=notifications_app
-      - POSTGRES_USER=notifications_app
+      - POSTGRES_DB=messaging-service
+      - POSTGRES_USER=messaging-service
       - POSTGRES_PASSWORD=P@55w0rd
 
   redis:

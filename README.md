@@ -66,7 +66,7 @@ pip install flake8 && cp devops/scripts/commit-checks.sh .git/hooks/pre-commit
 
 Run `docker-compose up` to fire up the notification service app & critical dependencies (database, rabbitmq)
 
-Hit this url http://localhost:80/ to access the app.
+Hit this url http://localhost:80/ to access the app. This will send a request to the nginx LB that in turn proxies it to the web server backends.
 
 - Run `docker ps -a` to see all docker containers running on your development machine:
 

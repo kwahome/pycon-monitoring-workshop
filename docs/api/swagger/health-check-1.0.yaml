@@ -1,0 +1,57 @@
+swagger: '2.0'
+info:
+  description: Health Check API endpoint
+  version: 1.0
+  title: Health Check API endpoint
+  termsOfService: ''
+  contact:
+    email: kevowahome@gmail.com
+host: "<HOST>"
+basePath: /api/v1.0/
+schemes:
+  - https
+  - http
+paths:
+  /checkHealth:
+    get:
+      tags:
+        - Check the health of the service
+      summary: Health Check API endpoint
+      description: An API endpoint monitoring services can use to check on the health ('aliveness') of a running messaging service
+      operationId: checkHealth
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      parameters:
+        - $ref: './common-1.0.yml#/parameters/messageId'
+        - $ref: './common-1.0.yml#/parameters/timestamp'
+        - name: body
+          in: body
+          description: Register a new customer
+          schema:
+            $ref: '#/definitions/CheckHealthRequest'
+      responses:
+        '200':
+          description: The message service can be reached successfully
+          schema:
+            $ref: '#/definitions/CheckHealthResponse'
+definitions:
+  CheckHealthRequest:
+    type: object
+    required:
+        - header
+    properties:
+      header:
+        $ref: './common-1.0.yml#/definitions/Header'
+
+  CheckHealthResponse:
+      type: object
+      required:
+        - header
+      properties:
+        header:
+           $ref: './common-1.0.yml#/definitions/Header'
+externalDocs:
+  description: Find out more about Swagger
+  url: 'http://swagger.io'

@@ -116,3 +116,6 @@ logs
 .idea/*
 .idea/
 .vscode/
+
+# static files
+static/

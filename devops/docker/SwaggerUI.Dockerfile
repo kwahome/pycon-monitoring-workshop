@@ -1,5 +1,7 @@
 FROM swaggerapi/swagger-ui
 
+MAINTAINER Kelvin Wahome
+
 EXPOSE 8080
 
 COPY ./docs/api/swagger /docs/api/swagger
