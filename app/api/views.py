@@ -82,3 +82,17 @@ class HealthCheckView(BaseAPIView):
         return Response(
             status=status.HTTP_200_OK, content_type="application/json"
         )
+
+
+class SendMessageView(BaseAPIView):
+    """
+    View that monitoring services can use to check on the 'aliveness' of a
+    running messaging service.
+    """
+    allowed_methods = (POST,)
+    serializer = SendMessageRequestSerializer
+
+    def handle(self, request, *args, **kwargs):
+        return Response(
+            status=status.HTTP_202_ACCEPTED, content_type="application/json"
+        )

@@ -70,10 +70,10 @@ services:
       context: .
       dockerfile: ./devops/docker/SwaggerUI.Dockerfile
     environment:
-      - FOLDER=./docs/api/swagger
-      - SWAGGER_JSON=/docs/api/swagger/swagger/send-message.yml
-      - API_URL=http://localhost:9001/docs/api/swagger/send-message-1.0.yml
+      - SWAGGER_HOST=${APP_DOMAIN:-localhost}:8080
+      - API_URL=http://${APP_DOMAIN:-localhost}:${APP_PORT:-9001}/${FILE:-health-check}-1.0.yaml
     ports:
       - 9001:8080
     volumes:
-      - ./docs/api/swagger:/docs/api/swagger
+      - ./devops/scripts/swagger-ui-entrypoint.sh:/usr/share/nginx/swagger-ui-entrypoint.sh
+      - ./docs/api/swagger:/usr/share/nginx/swagger

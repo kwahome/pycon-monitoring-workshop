@@ -17,7 +17,7 @@ from django.contrib import admin
 from django.urls import include, path, re_path
 from django.views.decorators.csrf import csrf_exempt
 
-from app.api.views import HealthCheckView
+from app.api.views import HealthCheckView, SendMessageView
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -25,6 +25,12 @@ urlpatterns = [
     re_path(
         r"^api/v1.0/checkHealth/?$",
         csrf_exempt(HealthCheckView.as_view()),
-        name="health"
+        name="Health Check"
+    ),
+    # send message endpoint
+    re_path(
+        r"^api/v1.0/sendMessage/?$",
+        csrf_exempt(SendMessageView.as_view()),
+        name="Send Message"
     )
 ]

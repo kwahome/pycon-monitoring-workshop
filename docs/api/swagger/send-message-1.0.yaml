@@ -24,8 +24,8 @@ paths:
       produces:
         - application/json
       parameters:
-        - $ref: './common-1.0.yml#/parameters/messageId'
-        - $ref: './common-1.0.yml#/parameters/timestamp'
+        - $ref: './common-1.0.yaml#/parameters/messageId'
+        - $ref: './common-1.0.yaml#/parameters/timestamp'
         - name: body
           in: body
           description: Register a new customer
@@ -47,7 +47,7 @@ definitions:
       - language
     properties:
       header:
-        $ref: './common-1.0.yml#/definitions/Header'
+        $ref: './common-1.0.yaml#/definitions/Header'
       customerIdentifier:
         type: string
         example: '254733444555'
@@ -67,7 +67,7 @@ definitions:
         - header
       properties:
         header:
-           $ref: './common-1.0.yml#/definitions/Header'
+           $ref: './common-1.0.yaml#/definitions/Header'
 externalDocs:
   description: Find out more about Swagger
   url: 'http://swagger.io'

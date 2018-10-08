@@ -2,10 +2,12 @@ FROM swaggerapi/swagger-ui
 
 MAINTAINER Kelvin Wahome
 
-EXPOSE 8080
+COPY ./devops/swagger-ui/swagger-ui-nginx.conf /etc/nginx/nginx.conf
 
-COPY ./docs/api/swagger /docs/api/swagger
+ADD ./docs/api/swagger /usr/share/nginx/swagger/
 
-ENV SWAGGER_JSON "/api/docs/send-message.yml"
+COPY ./devops/scripts/swagger-ui-entrypoint.sh /usr/share/nginx/swagger-ui-entrypoint.sh
+
+ENTRYPOINT ["/usr/share/nginx/swagger-ui-entrypoint.sh"]
 
 CMD ["sh", "/usr/share/nginx/docker-run.sh"]
