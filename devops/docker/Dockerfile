@@ -16,4 +16,3 @@ EXPOSE 80
 EXPOSE 443
 
 CMD ./devops/scripts/start.sh
-s
