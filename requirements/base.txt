@@ -1,10 +1,13 @@
 Celery==4.2.0
 Django==2.1.2
 django-annoying==0.8.0
+django-cors-headers
 django-extensions
 django-fsm-admin==1.2.4
 django-fsm==2.6.0
 djangorestframework==3.8.2
 naz
 psycopg2-binary
+raven
+requests
 structlog==18.1.0

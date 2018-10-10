@@ -1,0 +1,27 @@
+language: python
+python:
+  - "3.7"
+
+env:
+  global:
+    - PYTHONASYNCIODEBUG='2'
+
+before_install:
+- pwd
+- sudo apt -y update; sudo apt-get -y install pandoc curl
+
+install:
+  - pwd; ls -lsha
+  - pip install -e .[dev,test]
+
+# run static analyzers, tests etc
+script:
+  - find . -name '*.pyc' -delete;find . -name '__pycache__' -delete | echo
+  - flake8 .
+  - pylint --enable=E --disable=W,R,C --unsafe-load-any-extension=y app/ tests/ utils/ configuration/
+  - bandit -r --exclude .venv -ll .
+  # to find types, use reveal_type eg: reveal_type(asyncio.get_event_loop())
+  # see: http://mypy.readthedocs.io/en/latest/common_issues.html#displaying-the-type-of-an-expression
+  - coverage erase
+  - export CI_ENVIRONMENT=Yes && coverage run --omit="*tests*,*.virtualenvs/*,*virtualenv/*,*.venv/*,*__init__*" -m unittest discover -v -s . && bash <(curl -s https://codecov.io/bash)
+  - coverage report --show-missing --fail-under=86

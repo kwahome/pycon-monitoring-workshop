@@ -44,7 +44,8 @@ class BaseModel(models.Model):
     Defines `__repr__` & `json` methods or any common method that you need
     for all your models
     """
-    __abstract__ = True
+    class Meta:
+        abstract = True
 
     state = FSMField(
         default=received, choices=FSMChoices.yield_choices(), protected=True
@@ -93,7 +94,7 @@ class MessageModel(BaseModel):
     class Meta:
         db_table = "message"
 
-    messageId = models.CharField(max_length=64)
+    messageId = models.CharField(max_length=64, unique=True)
     senderId = models.CharField(max_length=64)
     recipientId = models.CharField(max_length=64)
     messageType = models.CharField(
@@ -103,7 +104,9 @@ class MessageModel(BaseModel):
         max_length=64, choices=MessageChannels.yield_choices()
     )
     message = models.CharField(max_length=200)
-    priority = models.CharField(max_length=64, default="")
+    priority = models.CharField(
+        max_length=64, default="normal", blank=True, null=True
+    )
     status = models.CharField(max_length=64, default="")
     callback = models.CharField(max_length=200, default="")
     createdAt = models.DateTimeField(auto_now_add=True)

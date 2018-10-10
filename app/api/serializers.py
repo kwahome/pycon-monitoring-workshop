@@ -7,7 +7,7 @@ class APIHeaderSerializer(serializers.Serializer):
     timestamp = serializers.DateTimeField()
 
 
-class MessageRequestSerializer(serializers.ModelSerializer):
+class MessageObjectSerializer(serializers.ModelSerializer):
     class Meta:
         model = MessageModel
         fields = (
@@ -16,7 +16,8 @@ class MessageRequestSerializer(serializers.ModelSerializer):
             'recipientId',
             'messageType',
             'channel',
-            'message'
+            'message',
+            'priority'
         )
 
 
@@ -24,5 +25,5 @@ class SendMessageRequestSerializer(serializers.Serializer):
     """
     Serialize class for a send message request
     """
-    # header = APIHeaderSerializer(required=True)
-    messages = MessageRequestSerializer(many=True, allow_empty=False)
+    header = APIHeaderSerializer(required=True)
+    body = MessageObjectSerializer(many=True, allow_empty=False)
