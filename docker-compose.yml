@@ -77,3 +77,17 @@ services:
     volumes:
       - ./devops/scripts/swagger-ui-entrypoint.sh:/usr/share/nginx/swagger-ui-entrypoint.sh
       - ./docs/api/swagger:/usr/share/nginx/swagger
+
+  netdata:
+    image: firehol/netdata
+    container_name: netdata
+    ports:
+      - 19999:19999
+    cap_add:
+      - SYS_PTRACE
+    security_opt:
+      - apparmor:unconfined
+    volumes:
+      - /proc:/host/proc:ro
+      - /sys:/host/sys:ro
+      - /var/run/docker.sock:/var/run/docker.sock:ro
