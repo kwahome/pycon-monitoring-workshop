@@ -23,11 +23,13 @@ services:
     command: bash -c "./devops/scripts/wait-for-it.sh -t 120 db:5432 && ./devops/scripts/start.sh env=development"
     environment:
       - ENVIRONMENT=development
+      - DJANGO_SETTINGS_MODULE=configuration.settings
       - DB_USER=messaging-service
       - DB_PASS=P@55w0rd
       - DB_NAME=messaging-service
       - DB_HOST=db
       - DB_PORT=5432
+      - HTTPBIN_URL=http://httpbin:8000
     volumes:
       - ./:/usr/src/app
       - /app/static
@@ -38,6 +40,7 @@ services:
     links:
       - rabbitmq:rabbitmq
       - db:db
+      - httpbin:httpbin
 
   rabbitmq:
     image: rabbitmq:3-management
@@ -77,6 +80,11 @@ services:
     volumes:
       - ./devops/scripts/swagger-ui-entrypoint.sh:/usr/share/nginx/swagger-ui-entrypoint.sh
       - ./docs/api/swagger:/usr/share/nginx/swagger
+
+  httpbin:
+    image: citizenstig/httpbin
+    ports:
+      - 8000:8000
 
   netdata:
     image: firehol/netdata

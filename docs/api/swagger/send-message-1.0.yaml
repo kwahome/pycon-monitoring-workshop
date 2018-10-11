@@ -7,7 +7,7 @@ info:
   contact:
     email: kevowahome@gmail.com
 host: "<HOST>"
-basePath: /api/messages/v1/
+basePath: /api/messages/v1.0/
 schemes:
   - https
   - http
@@ -24,16 +24,16 @@ paths:
       produces:
         - application/json
       parameters:
-        - $ref: './common-1.0.yaml#/parameters/messageId'
+        - $ref: './common-1.0.yaml#/parameters/requestId'
         - $ref: './common-1.0.yaml#/parameters/timestamp'
         - name: body
           in: body
-          description: Register a new customer
+          description: Submit message(s)
           schema:
             $ref: '#/definitions/SendMessageRequest'
       responses:
-        '201':
-          description: A successful registration
+        '202':
+          description: Message(s) accepted for onward submission
           schema:
             $ref: '#/definitions/SendMessageResponse'
         '400':
@@ -42,24 +42,10 @@ definitions:
   SendMessageRequest:
     type: object
     required:
-      - customerIdentifier
-      - productCode
-      - language
+      -
     properties:
       header:
         $ref: './common-1.0.yaml#/definitions/Header'
-      customerIdentifier:
-        type: string
-        example: '254733444555'
-      productCode:
-        type: string
-        example: airtel-ke
-      product:
-        type: string
-        example: cash
-      language:
-        type: string
-        example: en
 
   SendMessageResponse:
       type: object

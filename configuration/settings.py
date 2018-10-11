@@ -11,12 +11,14 @@ https://docs.djangoproject.com/en/1.11/ref/settings/
 """
 
 import os
-
-ENVIRONMENT = os.environ['ENVIRONMENT']
+from utils import logging
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
+SERVICE = os.environ.get('SERVICE', 'messaging-service')
+
+ENVIRONMENT = os.environ['ENVIRONMENT']
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/1.11/howto/deployment/checklist/
@@ -40,7 +42,9 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'rest_framework',
-    'app.core'
+    'corsheaders',
+    'app.core',
+    'app.api'
 ]
 
 MIDDLEWARE = [
@@ -51,6 +55,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'corsheaders.middleware.CorsMiddleware'
 ]
 
 ROOT_URLCONF = 'configuration.urls'
@@ -135,3 +140,77 @@ STATIC_ROOT = os.path.join(BASE_DIR, 'static')
 STATIC_URL = '/static/'
 
 API_KEY = 'api-key'
+
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    # 'filters': {
+    #     'environment': {
+    #         '()': 'configuration.CustomFilter',
+    #     },
+    # },
+    'handlers': {
+        'sentry': {
+            'level': 'ERROR',
+            'class': 'raven.contrib.django.raven_compat.handlers.SentryHandler',
+            'formatter': 'verbose',
+            # 'filters': ['environment'],
+        },
+        'console': {
+            'level': 'INFO',
+            'class': 'logging.StreamHandler',
+            'formatter': 'verbose',
+            # 'filters': ['environment'],
+        },
+    },
+    'formatters': {
+        'verbose': {
+            'format': '%(asctime)s %(levelname)s module=%(module)s, '
+                      'process_id=%(process)d, path=%(pathname)s, %(message)s, '
+                      'funcName=%(funcName)s, lineNumber=%(lineno)d \n'
+        }
+    },
+    'loggers': {
+        'django.request': {
+            'handlers': ['sentry'],
+            'level': 'DEBUG',
+        },
+        'api': {
+            'handlers': ['console', 'sentry'],
+            'level': 'DEBUG',
+            'propagate': False
+        },
+        'utils': {
+            'handlers': ['console', 'sentry'],
+            'level': 'DEBUG',
+            'propagate': False
+        },
+        'celery': {
+            'handlers': ['console', 'sentry'],
+            'level': 'DEBUG',
+            'propagate': True
+        },
+        'app': {
+            'handlers': ['console', 'sentry'],
+            'level': 'DEBUG',
+            'propagate': False
+        },
+
+    }
+}
+
+logging.init_logging()
+
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': [],
+    'DEFAULT_PERMISSION_CLASSES': [],
+}
+
+CORS_ORIGIN_ALLOW_ALL = True
+CORS_ALLOW_CREDENTIALS = True
+CORS_ORIGIN_WHITELIST = (
+    'localhost:9001',
+)
+CORS_ORIGIN_REGEX_WHITELIST = (
+    'localhost:9001',
+)

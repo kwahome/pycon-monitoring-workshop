@@ -15,7 +15,7 @@ paths:
   /checkHealth:
     get:
       tags:
-        - Check the health of the service
+        - checkHealth
       summary: Health Check API endpoint
       description: An API endpoint monitoring services can use to check on the health ('aliveness') of a running messaging service
       operationId: checkHealth
@@ -24,13 +24,8 @@ paths:
       produces:
         - application/json
       parameters:
-        - $ref: './common-1.0.yaml#/parameters/messageId'
+        - $ref: './common-1.0.yaml#/parameters/requestId'
         - $ref: './common-1.0.yaml#/parameters/timestamp'
-        - name: body
-          in: body
-          description: Register a new customer
-          schema:
-            $ref: '#/definitions/CheckHealthRequest'
       responses:
         '200':
           description: The message service can be reached successfully

@@ -2,6 +2,8 @@
 
 INFO_LOG_TAG="INFO  [start.sh]"
 
+echo "$INFO_LOG_TAG generating database migrations..."
+python3 manage.py makemigrations core --settings=$DJANGO_SETTINGS_MODULE
 echo "$INFO_LOG_TAG performing database migrations..."
 python3 manage.py migrate --noinput --settings=$DJANGO_SETTINGS_MODULE
 echo "$INFO_LOG_TAG collecting static files..."
