@@ -1,6 +1,8 @@
 from django.db import models
 from django_fsm import FSMField, transition
 from enum import Enum
+from jsonfield import JSONField
+from .managers import MessageManager
 
 
 # Define State Machine
@@ -26,7 +28,7 @@ class MessageTypes(ChoicesEnum):
 
 class MessageChannels(ChoicesEnum):
     AT = 'africa-is-talking'
-    GOOGLE = 'google'
+    FIREBASE = 'firebase'
     SMPP = 'smpp'
 
 
@@ -44,11 +46,18 @@ class BaseModel(models.Model):
     Defines `__repr__` & `json` methods or any common method that you need
     for all your models
     """
+    received, started, failed, submitted, completed = (
+        received, started, failed, submitted, completed
+    )
+
     class Meta:
         abstract = True
 
     state = FSMField(
-        default=received, choices=FSMChoices.yield_choices(), protected=True
+        default=received,
+        choices=FSMChoices.yield_choices(),
+        protected=True,
+        db_index=True
     )
 
     @transition(field=state, source=[received, failed], target=started)
@@ -90,24 +99,24 @@ class BaseModel(models.Model):
         return
 
 
-class MessageModel(BaseModel):
+class MessageRequest(BaseModel):
     class Meta:
         db_table = "message"
 
-    messageId = models.CharField(max_length=64, unique=True)
-    senderId = models.CharField(max_length=64)
-    recipientId = models.CharField(max_length=64)
+    messageId = models.CharField(
+        max_length=255,
+        db_index=True
+    )
     messageType = models.CharField(
-        max_length=64, choices=MessageTypes.yield_choices()
+        max_length=64,
+        choices=MessageTypes.yield_choices(),
+        db_index=True,
+        blank=False,
+        null=False
     )
-    channel = models.CharField(
-        max_length=64, choices=MessageChannels.yield_choices()
+    data = JSONField(
+        default=dict(attempts=0)
     )
-    message = models.CharField(max_length=200)
-    priority = models.CharField(
-        max_length=64, default="normal", blank=True, null=True
-    )
-    status = models.CharField(max_length=64, default="")
-    callback = models.CharField(max_length=200, default="")
     createdAt = models.DateTimeField(auto_now_add=True)
     modifiedAt = models.DateTimeField(auto_now_add=True)
+    objects = MessageManager()

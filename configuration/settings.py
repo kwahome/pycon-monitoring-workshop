@@ -16,6 +16,8 @@ from utils import logging
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
+path = lambda *a: os.path.join(BASE_DIR, *a)
+
 SERVICE = os.environ.get('SERVICE', 'messaging-service')
 
 ENVIRONMENT = os.environ['ENVIRONMENT']
@@ -44,7 +46,10 @@ INSTALLED_APPS = [
     'rest_framework',
     'corsheaders',
     'app.core',
-    'app.api'
+    'app.api',
+    'app.channels.at.apps.AfricasTalkingChannelAppConfig',
+    'app.channels.firebase.apps.FirebaseChannelAppConfig',
+    'app.channels.smpp.apps.SMPPChannelAppConfig'
 ]
 
 MIDDLEWARE = [

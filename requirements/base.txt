@@ -6,6 +6,7 @@ django-extensions
 django-fsm-admin==1.2.4
 django-fsm==2.6.0
 djangorestframework==3.8.2
+jsonfield
 naz
 psycopg2-binary
 raven

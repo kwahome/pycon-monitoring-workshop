@@ -1,29 +1,19 @@
 from rest_framework import serializers
-from app.core.models import MessageModel
-
-
-class APIHeaderSerializer(serializers.Serializer):
-    messageId = serializers.CharField(max_length=64)
-    timestamp = serializers.DateTimeField()
-
-
-class MessageObjectSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = MessageModel
-        fields = (
-            'messageId',
-            'senderId',
-            'recipientId',
-            'messageType',
-            'channel',
-            'message',
-            'priority'
-        )
+from app.core.models import MessageChannels, MessageTypes
 
 
 class SendMessageRequestSerializer(serializers.Serializer):
     """
     Serialize class for a send message request
     """
-    header = APIHeaderSerializer(required=True)
-    body = MessageObjectSerializer(many=True, allow_empty=False)
+    messageId = serializers.CharField(max_length=64, required=True)
+    senderId = serializers.CharField(max_length=64, required=True)
+    recipientId = serializers.CharField(max_length=64, required=True)
+    messageType = serializers.ChoiceField(
+        choices=MessageTypes.yield_choices(), required=True
+    )
+    channel = serializers.ChoiceField(
+        choices=MessageChannels.yield_choices(), required=True
+    )
+    message = serializers.CharField(max_length=200)
+    priority = serializers.CharField(max_length=64)
