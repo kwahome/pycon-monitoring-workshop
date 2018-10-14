@@ -23,5 +23,5 @@ script:
   # to find types, use reveal_type eg: reveal_type(asyncio.get_event_loop())
   # see: http://mypy.readthedocs.io/en/latest/common_issues.html#displaying-the-type-of-an-expression
   - coverage erase
-  - export CI_ENVIRONMENT=Yes && coverage run --omit="*tests*,*.virtualenvs/*,*virtualenv/*,*.venv/*,*__init__*" -m unittest discover -v -s . && bash <(curl -s https://codecov.io/bash)
+  - export CI_ENVIRONMENT=Yes && docker-compose run -e CC_TEST_REPORTER_ID=$CC_TEST_REPORTER_ID  ./devops/scripts/run_test.sh && bash <(curl -s https://codecov.io/bash)
   - coverage report --show-missing --fail-under=86

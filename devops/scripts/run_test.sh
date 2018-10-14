@@ -1,3 +1,3 @@
 #!/usr/bin/env bash
 
-python manage.py test
+docker-compose run web python manage.py test
