@@ -1,9 +1,9 @@
 from django.apps import AppConfig
 
 
-class CoreConfig(AppConfig):
-    name = "core"
-    label = "core"
+class CoreAppConfig(AppConfig):
+    name = "app.core"
+    label = "app.core"
 
     def ready(self):
         pass

@@ -105,4 +105,4 @@ class PushNotificationAbstractRoutingHandler(RoutingAbstractHandler):
     Abstract `push` notification routing handler
     """
     abstract = True
-    message_type = MessageTypes.SMS.value
+    message_type = MessageTypes.PUSH.value

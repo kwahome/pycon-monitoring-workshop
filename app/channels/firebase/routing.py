@@ -9,9 +9,7 @@ class FirebaseRoutingHandler(PushNotificationAbstractRoutingHandler):
     Routing a PUSH notification via firebase
     """
     channel = MessageChannels.FIREBASE.value
-    message_queue = "{0}.{1}.send_message".format(
-        channel, PushNotificationAbstractRoutingHandler.message_type
-    )
+    message_queue = 'firebase.push.send_message'
 
     def route_task(self):
         chain = FirebasePushNotificationTaskHandler().s(

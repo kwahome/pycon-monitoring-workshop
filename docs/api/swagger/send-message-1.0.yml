@@ -15,7 +15,7 @@ paths:
   /sendMessage:
     post:
       tags:
-        - Send a new message
+        - sendMessage
       summary: Send a new message
       description: Send a new message
       operationId: sendMessage

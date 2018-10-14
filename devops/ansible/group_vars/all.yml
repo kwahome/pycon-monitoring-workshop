@@ -15,11 +15,11 @@ CELERY_WORKERS_CONF:
     QUEUES:
       - celery
 
-  - CHANNEL: at
+  - CHANNEL: africas-talking
     TYPE: sms
     CONCURRENCY: "{{DEFAULT_CELERY_CONCURRENCY}}"
     QUEUES:
-      - at.sms.send_message
+      - africas-talking.sms.send_message
 
   - CHANNEL: firebase
     TYPE: push

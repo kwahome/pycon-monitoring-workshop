@@ -45,8 +45,8 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'rest_framework',
     'corsheaders',
-    'app.core',
-    'app.api',
+    'app.api.apps.ApiAppConfig',
+    'app.core.apps.CoreAppConfig',
     'app.channels.at.apps.AfricasTalkingChannelAppConfig',
     'app.channels.firebase.apps.FirebaseChannelAppConfig',
     'app.channels.smpp.apps.SMPPChannelAppConfig'
@@ -211,12 +211,25 @@ REST_FRAMEWORK = {
     'DEFAULT_PERMISSION_CLASSES': [],
 }
 
-# CELERY
-BROKER_URL = os.environ['BROKER_URL']
+# CELERY namespace
+# todo: investigate why tasks are not loaded automatically
+CELERY_IMPORTS = (
+    'app.channels.at.tasks',
+    'app.channels.firebase.tasks',
+    'app.channels.smpp.tasks'
+)
 
-BROKER_USE_SSL = False
+CELERY_BROKER_URL = os.environ['BROKER_URL']
+
+CELERY_BROKER_USE_SSL = False
 
 CELERY_ROUTES = {
+    'africas-talking.sms.send_message': {
+        'queue': 'africas-talking.sms.send_message'
+    },
+    'firebase.push.send_message': {
+        'queue': 'firebase.push.send_message'
+    },
     'smpp.sms.send_message': {
         'queue': 'smpp.sms.send_message'
     },

@@ -9,9 +9,7 @@ class SMPPRoutingHandler(SMSAbstractRoutingHandler):
     Routing an SMS message via SMPP
     """
     channel = MessageChannels.SMPP.value
-    message_queue = "{0}.{1}.send_message".format(
-        channel, SMSAbstractRoutingHandler.message_type
-    )
+    message_queue = 'smpp.sms.send_message'
     callback_queue = "all.callback.send_message"
 
     def route_task(self):

@@ -9,9 +9,7 @@ class AfricasTalkingRoutingHandler(SMSAbstractRoutingHandler):
     Routing an SMS via Africa's Talking
     """
     channel = MessageChannels.AT.value
-    message_queue = "{0}.{1}.send_message".format(
-        channel, SMSAbstractRoutingHandler.message_type
-    )
+    message_queue = 'africas-talking.sms.send_message'
 
     def route_task(self):
         chain = AfricasTalkingSendMessageTaskHandler().s(
