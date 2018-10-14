@@ -119,3 +119,8 @@ logs
 
 # static files
 static/
+
+# Supervisor files
+supervisord.log
+supervisord.pid
+supervisord.conf

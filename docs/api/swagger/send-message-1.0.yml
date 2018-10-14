@@ -24,8 +24,6 @@ paths:
       produces:
         - application/json
       parameters:
-        - $ref: './common-1.0.yaml#/parameters/requestId'
-        - $ref: './common-1.0.yaml#/parameters/timestamp'
         - name: body
           in: body
           description: Submit message(s)
@@ -42,18 +40,47 @@ definitions:
   SendMessageRequest:
     type: object
     required:
-      -
+      - messageId
+      - senderId
+      - recipientId
+      - messageType
+      - channel
+      - message
     properties:
-      header:
-        $ref: './common-1.0.yaml#/definitions/Header'
+      messageId:
+        type: string
+        maxLength: 64
+        example: "y7sdxl24df"
+      senderId:
+        type: string
+        maxLength: 64
+        example: "0700123456"
+      recipientId:
+        type: string
+        maxLength: 64
+        example: "0700987654"
+      messageType:
+        type: string
+        enum: ['sms', 'push']
+      channel:
+        type: string
+        enum: ['africa-is-talking', 'firebase', 'smpp']
+      message:
+        type: string
+        maxLength: 200
+        example: This is an example message
+      priority:
+        type: string
+        maxLength: 64
+        example: 'normal'
+      callback:
+        type: string
+        maxLength: 64
+        example: 'https://mydomain.com/callback/y7sdxl24df'
 
   SendMessageResponse:
       type: object
-      required:
-        - header
-      properties:
-        header:
-           $ref: './common-1.0.yaml#/definitions/Header'
+
 externalDocs:
   description: Find out more about Swagger
   url: 'http://swagger.io'

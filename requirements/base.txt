@@ -1,3 +1,4 @@
+ansible>=2.5
 Celery==4.2.0
 Django==2.1.2
 django-annoying==0.8.0

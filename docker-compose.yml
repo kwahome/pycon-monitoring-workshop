@@ -20,16 +20,49 @@ services:
     depends_on:
       - rabbitmq
       - db
-    command: bash -c "./devops/scripts/wait-for-it.sh -t 120 db:5432 && ./devops/scripts/start.sh env=development"
+    command: bash -c "./devops/scripts/wait-for-it.sh -t 120 db:5432 && ./devops/scripts/app_server.sh env=development"
     environment:
       - ENVIRONMENT=development
       - DJANGO_SETTINGS_MODULE=configuration.settings
+      - SERVICE=messaging-service
       - DB_USER=messaging-service
       - DB_PASS=P@55w0rd
       - DB_NAME=messaging-service
       - DB_HOST=db
       - DB_PORT=5432
       - HTTPBIN_URL=http://httpbin:8000
+      - BROKER_URL=amqp://guest:guest@rabbitmq:5672//
+    volumes:
+      - ./:/usr/src/app
+      - /app/static
+      - /var/log
+      - /var/log/nginx
+    ports:
+      - 80
+    links:
+      - rabbitmq:rabbitmq
+      - db:db
+      - httpbin:httpbin
+
+  worker:
+    build:
+      context: .
+      dockerfile: ./devops/docker/Dockerfile
+    depends_on:
+      - rabbitmq
+      - db
+    command: bash -c "./devops/scripts/wait-for-it.sh -t 120 db:5432 && ./devops/scripts/worker_server.sh env=development"
+    environment:
+      - ENVIRONMENT=development
+      - DJANGO_SETTINGS_MODULE=configuration.settings
+      - SERVICE=messaging-service
+      - DB_USER=messaging-service
+      - DB_PASS=P@55w0rd
+      - DB_NAME=messaging-service
+      - DB_HOST=db
+      - DB_PORT=5432
+      - HTTPBIN_URL=http://httpbin:8000
+      - BROKER_URL=amqp://guest:guest@rabbitmq:5672//
     volumes:
       - ./:/usr/src/app
       - /app/static
@@ -74,7 +107,7 @@ services:
       dockerfile: ./devops/docker/SwaggerUI.Dockerfile
     environment:
       - SWAGGER_HOST=${APP_DOMAIN:-localhost}:8080
-      - API_URL=http://${APP_DOMAIN:-localhost}:${APP_PORT:-9001}/${FILE:-health-check}-1.0.yaml
+      - API_URL=http://${APP_DOMAIN:-localhost}:${APP_PORT:-9001}/${FILE:-send-message}-1.0.yml
     ports:
       - 9001:8080
     volumes:

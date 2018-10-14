@@ -211,6 +211,18 @@ REST_FRAMEWORK = {
     'DEFAULT_PERMISSION_CLASSES': [],
 }
 
+# CELERY
+BROKER_URL = os.environ['BROKER_URL']
+
+BROKER_USE_SSL = False
+
+CELERY_ROUTES = {
+    'smpp.sms.send_message': {
+        'queue': 'smpp.sms.send_message'
+    }
+}
+
+# CORS
 CORS_ORIGIN_ALLOW_ALL = True
 CORS_ALLOW_CREDENTIALS = True
 CORS_ORIGIN_WHITELIST = (

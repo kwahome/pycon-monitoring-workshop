@@ -13,7 +13,7 @@ class MessageManager(models.Manager):
     def get_latest_message(self, message_id):
         with atomic():
             return self.select_for_update().filter(
-                messageId=message_id
+                message_id=message_id
             ).exclude(
-                createdAt=None
-            ).latest('createdAt')
+                created_at=None
+            ).latest('created_at')

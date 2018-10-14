@@ -1,0 +1,68 @@
+[supervisord]
+nodaemon=true
+
+
+[rpcinterface:supervisor]
+supervisor.rpcinterface_factory = supervisor.rpcinterface:make_main_rpcinterface
+
+[inet_http_server]         ; inet (TCP) server disabled by default
+port=127.0.0.1:9012        ; (ip_address:port specifier, *:port for all iface)
+
+[supervisorctl]
+serverurl=http://127.0.0.1:9012 ; use an http:// url to specify an inet socket
+
+[eventlistener:procstatelistener]
+environment=ENVIRONMENT="{{ ENVIRONMENT }}",DJANGO_SETTINGS_MODULE="{{ SETTINGS_DIR }}.settings"
+command=python devops/scripts/supervisor-genie.py
+events=PROCESS_STATE
+redirect_stderr = false
+stdout_logfile=/dev/stdout
+stderr_logfile=/dev/stderr
+stdout_logfile_maxbytes=0
+stderr_logfile_maxbytes=0
+stopasgroup=false
+startsecs=5
+buffer_size=1024
+autostart=true
+autorestart=unexpected
+
+
+[group:{{ APP_NAME }}]
+programs=celerybeat{% for item in CELERY_WORKERS_CONF %},celery-{{item.CHANNEL}}-{{item.TYPE}}{%endfor%}
+
+[program:celerybeat]
+environment=ENVIRONMENT="{{ ENVIRONMENT }}",DJANGO_SETTINGS_MODULE="{{ SETTINGS_DIR }}.settings"
+command=celery -A {{ SETTINGS_DIR }}.celery beat -l info
+stdout_logfile=/dev/stdout
+stderr_logfile=/dev/stderr
+stdout_logfile_maxbytes=0
+stderr_logfile_maxbytes=0
+stopasgroup=false
+startsecs=5
+
+
+{% for item in CELERY_WORKERS_CONF %}
+
+
+[program:celery-{{item.CHANNEL}}-{{item.TYPE}}]
+environment=ENVIRONMENT="{{ ENVIRONMENT }}",DJANGO_SETTINGS_MODULE="{{ SETTINGS_DIR }}.settings"
+command=celery worker -A {{ SETTINGS_DIR }}.celery --without-gossip --without-mingle --without-heartbeat --concurrency={{item.CONCURRENCY}} -Q {{ item.QUEUES |join(',') }} -l info -n {{item.CHANNEL}}_{{item.TYPE}}.{{APP_NAME}}.%%h
+stdout_logfile=/dev/stdout
+stderr_logfile=/dev/stderr
+stdout_logfile_maxbytes=0
+stderr_logfile_maxbytes=0
+stopasgroup=false
+startsecs=5
+
+; Need to wait for currently executing tasks to finish at shutdown.
+; Increase this if you have very long running tasks.
+; our CELERYD_TASK_TIME_LIMIT is set to 120 seconds,
+; so supervisor can wait for 130 seconds before shutting down the worker
+stopwaitsecs=130
+
+; When resorting to send SIGKILL to the program to terminate it
+; send SIGKILL to its whole process group instead,
+; taking care of its children as well.
+killasgroup=true
+
+{% endfor %}

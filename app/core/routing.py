@@ -83,6 +83,8 @@ class RoutingAbstractHandler(with_metaclass(RoutingHandlerMetaClass, object)):
 
      - Any object inheriting this object should be registered in
         ROUTING_REGISTRY with the `channel` as the key
+
+    - An instance of this class is initialized with a `message_obj`
     """
     abstract = True
 
@@ -92,7 +94,7 @@ class RoutingAbstractHandler(with_metaclass(RoutingHandlerMetaClass, object)):
 
 class SMSAbstractRoutingHandler(RoutingAbstractHandler):
     """
-    Abstract SMS routing handler
+    Abstract `sms` routing handler
     """
     abstract = True
     message_type = MessageTypes.SMS.value
@@ -100,7 +102,7 @@ class SMSAbstractRoutingHandler(RoutingAbstractHandler):
 
 class PushNotificationAbstractRoutingHandler(RoutingAbstractHandler):
     """
-    Abstract SMS routing handler
+    Abstract `push` notification routing handler
     """
     abstract = True
     message_type = MessageTypes.SMS.value

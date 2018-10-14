@@ -30,21 +30,16 @@ class SendMessageView(BaseAPIView):
     validator = SendMessageRequestSerializer
     event = 'send_message'
 
-    def __init__(self):
-        super(SendMessageView, self).__init__()
-        self.message_obj = None
-        self.channel = None
-        self.message_type = None
-
     def handle_request(self, request, *args, **kwargs):
         try:
+            self._init_variables()
+            self._init_message_request()
             duplicate, response = self.duplicate_check()
             if not duplicate:
-                self.message_obj = self.message_object()
                 response = self.route_task()
         except Exception as e:
             self.logger.exception(
-                'exception',
+                '{0}_exception'.format(self.event),
                 exception=str(e.__class__.__name__),
                 message=str(e),
                 handler=self.__class__.__name__,
@@ -57,14 +52,35 @@ class SendMessageView(BaseAPIView):
             )
         return response
 
+    def _init_variables(self):
+        self.message_id = self.req_data['messageId']
+        self.channel = self.req_data["channel"]
+        self.message_type = self.req_data["messageType"]
+        self.sender_id = self.req_data["senderId"]
+        self.recipient_id = self.req_data["recipientId"]
+        self.message = self.req_data["message"]
+        self.priority = self.req_data["priority"]
+
+    def _init_message_request(self):
+        self.message_obj = MessageRequest(
+            message_id=self.message_id,
+            data=dict(
+                sender_id=self.sender_id,
+                recipient_id=self.recipient_id,
+                message_type=self.message_type,
+                channel=self.channel,
+                message=self.message,
+                priority=self.priority
+            )
+        )
+
     def duplicate_check(self):
         result = False, None
-        message_id = self.req_data.get('messageId')
-        if get_object_or_None(MessageRequest, messageId=message_id):
+        if get_object_or_None(MessageRequest, message_id=self.message_id):
             message = "A message with messageId=`{0}` has already been " \
-                      "received".format(message_id)
+                      "received".format(self.message_id)
             self.logger.info(
-                'duplicate_message',
+                '{0}_duplicate_message'.format(self.event),
                 details=message,
                 handler=self.__class__.__name__,
             )
@@ -75,27 +91,6 @@ class SendMessageView(BaseAPIView):
                 )
             )
         return result
-
-    def message_object(self):
-        self.logger.info(
-            'initializing_message_object',
-            request=self.req_data,
-            handler=self.__class__.__name__,
-        )
-        self.channel = self.req_data.get("channel")
-        self.message_type = self.req_data.get("messageType")
-        return MessageRequest(
-            messageId=self.req_data.get("messageId"),
-            messageType=self.message_type,
-            data=dict(
-                senderId=self.req_data.get("senderId"),
-                recipientId=self.req_data.get("recipientId"),
-                messageType=self.message_type,
-                channel=self.channel,
-                message=self.req_data.get("message"),
-                priority=self.req_data.get("priority")
-            )
-        )
 
     def route_task(self):
         routing_handler = ROUTING_REGISTRY.get(
@@ -108,7 +103,7 @@ class SendMessageView(BaseAPIView):
                         "supported".format(self.channel, self.message_type)
             )
             self.logger.info(
-                'routing_message_task_error',
+                '{0}_routing_error'.format(self.event),
                 message_obj=error_message,
                 handler=self.__class__.__name__,
             )
@@ -117,12 +112,12 @@ class SendMessageView(BaseAPIView):
                 data=error_message
             )
         else:
+            self.message_obj.save()
             self.logger.info(
-                'routing_message_task',
-                message_obj=self.message_obj,
+                '{0}_routing_start'.format(self.event),
+                message_id=self.message_id,
                 handler=self.__class__.__name__,
             )
-            self.message_obj.save()
             routing_handler(self.message_obj).route_task()
             response = self.respond(code=status.HTTP_202_ACCEPTED)
         return response

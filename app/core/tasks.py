@@ -31,7 +31,7 @@ class BaseTaskHandler(app.Task):
     It initiates this class with instance of MessageRequest
 
     Children classes subclassing this class are expected to:
-        - define an `execute` method, to will be called with a message_id &
+        - define an `execute` method, to be called with a `message_id` &
         all the args provided by the view calling this task
     """
     abstract = True
@@ -57,7 +57,7 @@ class BaseTaskHandler(app.Task):
             message_id=self.message_id
         )
         self.channel = self.message_obj.data.get('channel')
-        self.message_type = self.message_obj.data.get('messageType')
+        self.message_type = self.message_obj.data.get('message_type')
 
     def _state_transition(self):
         self.logger.debug("state_transition_kwargs", kwargs=self.kwargs)
@@ -90,17 +90,12 @@ class BaseTaskHandler(app.Task):
         pass
 
     def run(self, message_id, *args, **kwargs):
-        assert message_id, "messageId should be defined"
+        assert message_id, "message_id should be defined"
         self.initiate(message_id)
-
         self.kwargs = copy.deepcopy(kwargs)
-
-        self.event_name = self.event_name or self.message_obj.messageType
-
+        self.event_name = self.event_name or self.message_obj.message_type
         recon = self.message_obj.data.get('recon', False)
-
         processed_calling_task_run_method = True
-        # if its recon, validate the request
         if recon:
             if self.support_recon and hasattr(self, 'handle_recon'):
                 processed_calling_task_run_method = self.handle_recon()
@@ -122,20 +117,19 @@ class BaseTaskHandler(app.Task):
         try:
             self.logger.info("{}_task_start".format(self.event_name))
             response = self.execute(
-                MessageDataParser(self.message_id, **self.message_obj.data)
+                MessageDataParser(
+                    self.message_id,
+                    **self.message_obj.data
+                )
             )
-
             self.logger.info("execute_response", **response)
-
             self.logger.info("{}_task_end".format(self.event_name), **response)
         except Exception as e:
-
             self.logger.error(
                 '{}_task_end'.format(self.event_name),
                 error=str(e),
                 **self.message_obj.data.get('callback', {})
             )
-
         return self.message_id
 
     def get_diff_time(self):

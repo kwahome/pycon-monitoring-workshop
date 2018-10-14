@@ -1,0 +1,39 @@
+---
+APP_NAME: messaging-service
+SETTINGS_DIR: configuration
+DEFAULT_CELERY_CONCURRENCY: 2
+
+channels:
+ - at
+ - firebase
+ - smpp
+
+CELERY_WORKERS_CONF:
+  - CHANNEL: all
+    TYPE: all
+    CONCURRENCY: "{{DEFAULT_CELERY_CONCURRENCY}}"
+    QUEUES:
+      - celery
+
+  - CHANNEL: at
+    TYPE: sms
+    CONCURRENCY: "{{DEFAULT_CELERY_CONCURRENCY}}"
+    QUEUES:
+      - at.sms.send_message
+
+  - CHANNEL: firebase
+    TYPE: push
+    CONCURRENCY: "{{DEFAULT_CELERY_CONCURRENCY}}"
+    QUEUES:
+      - firebase.push.send_message
+
+  - CHANNEL: smpp
+    TYPE: sms
+    CONCURRENCY: "{{DEFAULT_CELERY_CONCURRENCY}}"
+    QUEUES:
+      - smpp.sms.send_message
+
+CELERY_WORKERS: 2
+CELERY_WORKERS_QUEUE: 1
+CELERY_WORKERS_CELERY_AIRTEL_TZ_BALANCE_QUEUES: 3
+CELERY_WORKERS_CELERY_TIGO_TZ_BALANCE_QUEUES: 3

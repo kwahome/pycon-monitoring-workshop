@@ -9,12 +9,12 @@ definitions:
         format: date-time
       responseStatus:
         $ref: "#/definitions/Status"
-#      groupId:
-#        type: string
-#      referenceId:
-#        type: string
-#      batch:
-#        $ref: "#/definitions/Batch"
+      groupId:
+        type: string
+      referenceId:
+        type: string
+      batch:
+        $ref: "#/definitions/Batch"
     required:
       - messageId
       - timestamp

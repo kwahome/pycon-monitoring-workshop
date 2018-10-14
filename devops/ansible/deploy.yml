@@ -1,0 +1,39 @@
+---
+- hosts: 127.0.0.1
+  gather_facts: no
+  become: no
+  connection: local
+  vars_files:
+    - ./group_vars/all.yml
+    - ./group_vars/{{ env }}.yml
+
+
+  pre_tasks:
+
+    - name: Check active git branch
+      local_action: shell git branch | awk '/^\*/{print $2}'
+      register: gitbranch
+      args:
+        warn: false
+
+    - name: Echo the active git branch
+      command: echo ${gitbranch.stdout}
+
+    - name: Confirm deployment when not in master
+      when: ENVIRONMENT == "production" and gitbranch.stdout != "master"
+      pause: prompt="WARNING -> You are about to deploy to production while in the branch "{{ gitbranch.stdout }}". Action? (a)bort/(c)ontinue:"
+      register: deployment_confirmation
+
+    - name: Determine if to continue with deployment
+      when: ENVIRONMENT == "production" and gitbranch.stdout != "master"
+      debug: msg="Deployment aborted by user"
+      failed_when:
+        - deployment_confirmation.user_input != "c"
+        - deployment_confirmation.user_input != "C"
+
+  tasks:
+    - name: Configure supervisord for workers
+      environment:
+        CELERY_BROKER_URL: "{{ BROKER_URL}}"
+      template: src=../supervisord/supervisord.app.conf.v2.j2
+               dest=../supervisord/supervisord.conf

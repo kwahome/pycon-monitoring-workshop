@@ -103,20 +103,13 @@ class MessageRequest(BaseModel):
     class Meta:
         db_table = "message"
 
-    messageId = models.CharField(
+    message_id = models.CharField(
         max_length=255,
         db_index=True
-    )
-    messageType = models.CharField(
-        max_length=64,
-        choices=MessageTypes.yield_choices(),
-        db_index=True,
-        blank=False,
-        null=False
     )
     data = JSONField(
         default=dict(attempts=0)
     )
-    createdAt = models.DateTimeField(auto_now_add=True)
-    modifiedAt = models.DateTimeField(auto_now_add=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    modified_at = models.DateTimeField(auto_now_add=True)
     objects = MessageManager()
