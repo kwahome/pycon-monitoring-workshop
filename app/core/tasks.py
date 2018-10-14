@@ -1,32 +1,33 @@
 import copy
+from six import with_metaclass
 from configuration.celery import app
 from django.conf import settings
 from django.utils import timezone
 from .models import MessageRequest
+from .parsers import MessageDataParser
 from utils.logging import get_logger
 
 
-class MessageDataParser(object):
+class TaskMetaClass(type):
     """
-    Create an object with request params set as attributes in an instance of
-    this class
+    Metaclass to register celery tasks in the task registry.
+
+    As of celery 4.0.1, the task class is no longer using a special meta-class
+    that automatically registers the task in the task registry hence the need
+    for this metaclass.
     """
-    def __init__(self, message_id, **kwargs):
-        self.message_id = message_id
-
-        for key, value in list(kwargs.items()):
-            setattr(self, key, value)
-
-    def all_params(self):
-        return copy.deepcopy(self.__dict__)
+    def __init__(cls, name, bases, attr):
+        super(TaskMetaClass, cls).__init__(name, bases, attr)
+        if not attr.get('abstract', False):
+            app.register_task(cls())
 
 
-class BaseTaskHandler(app.Task):
+class BaseTaskHandler(with_metaclass(TaskMetaClass, app.Task)):
     """
-    Base task handler class forming the core workflow class.
+    Base task handler class forming the core tasks workflow class.
 
-    Each class that inherits from this class is automatically registered to
-    Celery task as long as it does not override abstract.
+    Any class that inherits from this class is automatically registered to
+    Celery's task registry as long as it's not abstract.
 
     It initiates this class with instance of MessageRequest
 
@@ -157,7 +158,8 @@ class SendMessageCallbackHandler(BaseTaskHandler):
     queue = 'all.send_message.callback'
     state_transition = False
     support_recon = True
-    event_name = 'send_smpp_message'
+    event_name = 'send_message_callback'
 
     def execute(self, params):
+        self.logger.info(event='{}_start'.format(self.event_name))
         return dict()

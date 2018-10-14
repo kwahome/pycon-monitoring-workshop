@@ -219,9 +219,11 @@ CELERY_IMPORTS = (
     'app.channels.smpp.tasks'
 )
 
-CELERY_BROKER_URL = os.environ['BROKER_URL']
+BROKER_URL = os.environ['BROKER_URL']
 
-CELERY_BROKER_USE_SSL = False
+BROKER_USE_SSL = False
+
+C_FORCE_ROOT = True
 
 CELERY_ROUTES = {
     'africas-talking.sms.send_message': {
