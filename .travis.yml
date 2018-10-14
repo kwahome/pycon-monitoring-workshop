@@ -17,8 +17,4 @@ script:
   - flake8 .
   - pylint --enable=E --disable=W,R,C --unsafe-load-any-extension=y app/ tests/ utils/ configuration/
   - bandit -r --exclude .venv -ll .
-  # to find types, use reveal_type eg: reveal_type(asyncio.get_event_loop())
-  # see: http://mypy.readthedocs.io/en/latest/common_issues.html#displaying-the-type-of-an-expression
-  - coverage erase
-  - export CI_ENVIRONMENT=Yes && ./devops/scripts/run_test.sh && bash <(curl -s https://codecov.io/bash)
-  - coverage report --show-missing --fail-under=80
+  - export CI_ENVIRONMENT=Yes && docker-compose run -e CC_TEST_REPORTER_ID=$CC_TEST_REPORTER_ID web ./devops/scripts/run_test.sh
