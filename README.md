@@ -1,4 +1,5 @@
 # pycon-monitoring-workshop
+[![Build Status](https://travis-ci.com/kwahome/pycon-monitoring-workshop.svg?branch=master)](https://travis-ci.com/kwahome/pycon-monitoring-workshop) [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/ambv/black)
 ### Brief
 Reliability and stability of your services is highly dependent on understanding the state of your infrastructure and systems. Troubleshooting them effectively necessitates real-time performance, data presented at fine granularity.
 
