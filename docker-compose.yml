@@ -51,7 +51,7 @@ services:
     depends_on:
       - rabbitmq
       - db
-    command: bash -c "./devops/scripts/wait-for-it.sh -t 120 db:5432 && ./devops/scripts/worker_server.sh env=development"
+    command: bash -c "./devops/scripts/wait-for-it.sh -t 120 db:5432 && ./devops/scripts/worker_server.sh"
     environment:
       - ENVIRONMENT=development
       - DJANGO_SETTINGS_MODULE=configuration.settings

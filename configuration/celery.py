@@ -4,9 +4,7 @@ import os
 
 from celery import Celery
 from django.conf import settings
-from structlog import get_logger
 
-logger = get_logger(__name__)
 
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'configuration.settings')
 

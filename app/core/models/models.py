@@ -5,7 +5,6 @@ from jsonfield import JSONField
 from .managers import MessageManager
 
 
-# Define State Machine
 received, started, failed, submitted, completed = (
     "received",
     "started",
@@ -27,7 +26,7 @@ class MessageTypes(ChoicesEnum):
 
 
 class MessageChannels(ChoicesEnum):
-    AT = 'africa-is-talking'
+    AT = 'africas-talking'
     FIREBASE = 'firebase'
     SMPP = 'smpp'
 

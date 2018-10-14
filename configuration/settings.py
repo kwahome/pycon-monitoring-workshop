@@ -219,6 +219,9 @@ BROKER_USE_SSL = False
 CELERY_ROUTES = {
     'smpp.sms.send_message': {
         'queue': 'smpp.sms.send_message'
+    },
+    'all.send_message.callback': {
+        'queue': 'all.send_message.callback'
     }
 }
 

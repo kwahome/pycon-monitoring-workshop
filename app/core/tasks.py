@@ -147,3 +147,17 @@ class BaseTaskHandler(app.Task):
         raise NotImplementedError(
             "`execute` method has not been implemented"
         )
+
+
+class SendMessageCallbackHandler(BaseTaskHandler):
+    """
+    Send message task callback handler
+    """
+    name = 'all.send_message.callback'
+    queue = 'all.send_message.callback'
+    state_transition = False
+    support_recon = True
+    event_name = 'send_smpp_message'
+
+    def execute(self, params):
+        return dict()

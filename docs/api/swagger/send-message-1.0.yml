@@ -64,7 +64,7 @@ definitions:
         enum: ['sms', 'push']
       channel:
         type: string
-        enum: ['africa-is-talking', 'firebase', 'smpp']
+        enum: ['africas-talking', 'firebase', 'smpp']
       message:
         type: string
         maxLength: 200
