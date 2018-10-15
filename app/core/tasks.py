@@ -147,5 +147,5 @@ class SendMessageCallbackHandler(BaseTaskHandler):
     event_name = 'send_message_callback'
 
     def execute(self, params):
-        self.transition_state(completed)
+        self._transition_state(completed)
         return dict()
