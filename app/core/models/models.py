@@ -45,9 +45,6 @@ class BaseModel(models.Model):
     Defines `__repr__` & `json` methods or any common method that you need
     for all your models
     """
-    received, started, failed, submitted, completed = (
-        received, started, failed, submitted, completed
-    )
 
     class Meta:
         abstract = True
@@ -66,6 +63,16 @@ class BaseModel(models.Model):
         """
         return
 
+    @transition(field=state, source=[started, failed], target=submitted)
+    def submitted(self):
+        """
+        Change message request to `submitted` state from `started` state.
+
+        Can also transition from source=failed to for retries after the task
+        has been `failed` due to network issues experienced
+        """
+        return
+
     @transition(field=state, source="*", target=failed)
     def failed(self):
         """
@@ -77,23 +84,16 @@ class BaseModel(models.Model):
     @transition(
         field=state,
         source=[submitted, failed, completed],
-        target=completed,
+        target=completed
     )
     def completed(self):
         """
         Request was successfully `submitted` to message center/server and a
         response returned.
 
-        Can also transition from source=completed to accommodate delivery
+        Can also transition from source=completed to accommodate for delivery
         notifications from message center/server even after the task has
         been `completed`
-        """
-        return
-
-    @transition(field=state, source=started, target=submitted)
-    def submitted(self):
-        """
-        Change message request to `submitted` state.
         """
         return
 

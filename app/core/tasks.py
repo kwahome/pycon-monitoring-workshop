@@ -1,9 +1,7 @@
 import copy
 from six import with_metaclass
 from configuration.celery import app
-from django.conf import settings
-from django.utils import timezone
-from .models import MessageRequest
+from .models import MessageRequest, started, failed, submitted, completed
 from .parsers import MessageDataParser
 from utils.logging import get_logger
 
@@ -60,63 +58,16 @@ class BaseTaskHandler(with_metaclass(TaskMetaClass, app.Task)):
         self.channel = self.message_obj.data.get('channel')
         self.message_type = self.message_obj.data.get('message_type')
 
-    def _state_transition(self):
-        self.logger.debug("state_transition_kwargs", kwargs=self.kwargs)
-        return self.kwargs.get('state_transition') \
-            if 'state_transition' in self.kwargs \
-            else self.state_transition
-
-    def change_state(self, state):
-        try:
-            if self._state_transition():
-                previous_state = self.message_obj.state
-                if state == MessageRequest.received:
-                    self.message_obj.started()
-                elif state == MessageRequest.completed:
-                    self.message_obj.completed()
-                self.message_obj.save()
-                self.logger.info("state_transition",
-                                 from_=previous_state,
-                                 to=self.message_obj.state)
-        except Exception as err:
-            self.logger.error("state_transition_error", error=str(err))
-            raise err
-
-    def transition_to_in_progress(self):
-        # self.change_state(ApiRequest.in_progress)
-        pass
-
-    def transition_to_complete(self):
-        # self.change_state(ApiRequest.completed)
-        pass
-
     def run(self, message_id, *args, **kwargs):
         assert message_id, "message_id should be defined"
         self.initiate(message_id)
         self.kwargs = copy.deepcopy(kwargs)
-        self.event_name = self.event_name or self.message_obj.message_type
-        recon = self.message_obj.data.get('recon', False)
-        processed_calling_task_run_method = True
-        if recon:
-            if self.support_recon and hasattr(self, 'handle_recon'):
-                processed_calling_task_run_method = self.handle_recon()
+        return self.task_handler(*args, **kwargs)
 
-        # add self if this is a bound task
-        if processed_calling_task_run_method:
-            if self._state_transition():
-                self.transition_to_in_progress()
-
-            results = self.handler(*args, **kwargs)
-            if self._state_transition():
-                self.transition_to_complete()
-        else:
-            self.logger.info("invalid_state")
-            results = self.message_id
-        return results
-
-    def handler(self, *args, **kwargs):
+    def task_handler(self, *args, **kwargs):
         try:
-            self.logger.info("{}_task_start".format(self.event_name))
+            self.logger.info("{}_task_start".format(self.event))
+            self._transition_state(started)
             response = self.execute(
                 MessageDataParser(
                     self.message_id,
@@ -124,25 +75,60 @@ class BaseTaskHandler(with_metaclass(TaskMetaClass, app.Task)):
                 )
             )
             self.logger.info("execute_response", **response)
-            self.logger.info("{}_task_end".format(self.event_name), **response)
+            self.logger.info("{}_task_end".format(self.event), **response)
+            self._transition_state(submitted)
         except Exception as e:
             self.logger.error(
-                '{}_task_end'.format(self.event_name),
+                '{}_task_error'.format(self.event),
                 error=str(e),
                 **self.message_obj.data.get('callback', {})
             )
+            self._transition_state(failed)
+        self._update_attempts()
         return self.message_id
 
-    def get_diff_time(self):
-        delta = timezone.now() - self.message_obj.createdAt
-        return delta.total_seconds()
+    def _transition_state(self, target):
+        if self.transitions_allowed:
+            try:
+                current = previous = self.message_obj.state
+                self.logger.info(
+                    "state_transition_start",
+                    message_id=self.message_obj.message_id,
+                    current_state=current,
+                    target_state=target
+                )
+                getattr(self.message_obj, target)()
+                self.message_obj.save()
+                self.logger.info(
+                    "state_transition_end",
+                    message_id=self.message_obj.message_id,
+                    previous_state=previous,
+                    new_state=self.message_obj.state
+                )
+            except Exception as e:
+                self.logger.error(
+                    "state_transition_error",
+                    message_id=self.message_obj.message_id,
+                    error=e.__class__.__name__,
+                    error_message=str(e)
+                )
+                raise e
 
-    def handle_recon(self):
-        recon_time = settings.DEFAULT_RECON_TIME_IN_MINUTES
-        if self.message_obj.state == MessageRequest.received and \
-                float(self.get_diff_time()) < float(recon_time * 60):
-            return True
-        return False
+    def _update_attempts(self):
+        self.message_obj.data.update(
+            dict(attempts=self.message_obj.data.get('attempts', 0)+1)
+        )
+        self.message_obj.save()
+
+    @property
+    def event(self):
+        return self.event_name or self.message_obj.message_type
+
+    @property
+    def transitions_allowed(self):
+        return self.kwargs.get('state_transition') \
+            if 'state_transition' in self.kwargs.keys() \
+            else self.state_transition
 
     def execute(self, params):
         raise NotImplementedError(
@@ -161,5 +147,5 @@ class SendMessageCallbackHandler(BaseTaskHandler):
     event_name = 'send_message_callback'
 
     def execute(self, params):
-        self.logger.info(event='{}_start'.format(self.event_name))
+        self.transition_state(completed)
         return dict()

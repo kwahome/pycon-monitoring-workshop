@@ -11,5 +11,4 @@ class SMPPSendMessageTaskHandler(BaseTaskHandler):
     event_name = 'send_smpp_message'
 
     def execute(self, params):
-        self.logger.info(event='{}_start'.format(self.event_name))
-        return dict()
+        return dict(status=200, data={})
