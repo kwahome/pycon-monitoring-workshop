@@ -14,4 +14,4 @@ before_install:
 script:
   - docker-compose build
   - find . -name '*.pyc' -delete;find . -name '__pycache__' -delete | echo
-  - export CI_ENVIRONMENT=Yes && docker-compose run -e CC_TEST_REPORTER_ID=$CC_TEST_REPORTER_ID web ./devops/scripts/run_test.sh
+  - export CI_ENVIRONMENT=Yes && docker-compose run web ./devops/scripts/run_test.sh

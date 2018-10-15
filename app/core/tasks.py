@@ -84,7 +84,6 @@ class BaseTaskHandler(with_metaclass(TaskMetaClass, app.Task)):
                 **self.message_obj.data.get('callback', {})
             )
             self._transition_state(failed)
-        self._update_attempts()
         return self.message_id
 
     def _transition_state(self, target):
