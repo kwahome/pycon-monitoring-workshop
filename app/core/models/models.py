@@ -63,6 +63,14 @@ class BaseModel(models.Model):
         """
         return
 
+    @transition(field=state, source="*", target=failed)
+    def failed(self):
+        """
+        For requests in `started` that cannot be submitted to Network
+        hence in the `failed` state.
+        """
+        return
+
     @transition(field=state, source=[started, failed], target=submitted)
     def submitted(self):
         """
@@ -70,14 +78,6 @@ class BaseModel(models.Model):
 
         Can also transition from source=failed to for retries after the task
         has been `failed` due to network issues experienced
-        """
-        return
-
-    @transition(field=state, source="*", target=failed)
-    def failed(self):
-        """
-        For requests in `started` that cannot be submitted to Network
-        hence in the `failed` state.
         """
         return
 

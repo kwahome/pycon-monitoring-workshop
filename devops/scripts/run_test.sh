@@ -9,7 +9,7 @@ curl -L https://codeclimate.com/downloads/test-reporter/test-reporter-latest-lin
 pip install black && ./devops/scripts/pre-commit-checks.sh "diff-tree --no-commit-id --name-only -r HEAD"
 cc-test-reporter before-build
 coverage erase
-./devops/docker/wait-for-it.sh db:5432
+./devops/scripts/wait-for-it.sh db:5432
 coverage run --omit="*virtualenvs/*,*settings*,*manage*,*migrations*,*__init__*,*admin*,*celery*,*docs/*," manage.py test ||
   exit 1
 bash <(curl -s https://codecov.io/bash)
