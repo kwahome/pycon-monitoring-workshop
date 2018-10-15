@@ -13,10 +13,5 @@ coverage erase
 coverage run --omit="*virtualenvs/*,*settings*,*manage*,*migrations*,*__init__*,*admin*,*celery*,*docs/*," manage.py test ||
   exit 1
 bash <(curl -s https://codecov.io/bash)
-
-# if test coverage is less than 85%, the following command will exit with status code 2; thus failing the build
-coverage report --fail-under=80 || COVERAGE_REPORT_FAILED="yes"
-[[ $COVERAGE_REPORT_FAILED == "yes" ]] && printf '\n\n test code coverage is below required 80 percent. \n\n' && exit 2
-
 coverage xml
 cc-test-reporter after-build --exit-code $?
