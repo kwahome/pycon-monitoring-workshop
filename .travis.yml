@@ -15,3 +15,6 @@ script:
   - docker-compose build
   - find . -name '*.pyc' -delete;find . -name '__pycache__' -delete | echo
   - export CI_ENVIRONMENT=Yes && docker-compose run web ./devops/scripts/run_test.sh
+
+after_success:
+  - codecov -t $CODECOV_TOKEN

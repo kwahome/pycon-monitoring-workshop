@@ -251,7 +251,7 @@ class RequestsWrapperPerformanceTest(unittest.TestCase):
             **kwargs
         )
 
-    def hermes_requests_timed(self, number=1, wrapper=timer('test')):
+    def wrapped_requests_timed(self, number=1, wrapper=timer('test')):
         from utils.requests import RequestsWrapper
         requests = RequestsWrapper()
         requests.wrapper = wrapper
@@ -274,11 +274,11 @@ class RequestsWrapperPerformanceTest(unittest.TestCase):
             print("1. bare requests")
             b_req_time = self.bare_requests_timed(number=number)
             print("* time = {0} ms".format(b_req_time))
-            print("2. hermes requests")
-            h_req_time = self.hermes_requests_timed(number=number)
+            print("2. wrapped requests")
+            h_req_time = self.wrapped_requests_timed(number=number)
             print("* time = {0} ms".format(h_req_time))
             time_diff = h_req_time - b_req_time
-            print("time diff (hermes requests time - bare requests time) "
+            print("time diff (wrapped requests time - bare requests time) "
                   "= {0} ms".format(time_diff))
             print("")
 
