@@ -1,3 +1,4 @@
+africastalking
 ansible>=2.5
 Celery==4.2.0
 coverage
