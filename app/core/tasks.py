@@ -41,14 +41,13 @@ class BaseTaskHandler(with_metaclass(TaskMetaClass, app.Task)):
 
     event_name = None
 
-    logger = get_logger(__name__)
-
     def __init__(self):
         self.kwargs = dict()
         self.message_obj = None
         self.message_id = None
         self.channel = None
         self.message_type = None
+        self.logger = None
 
     def initiate(self, message_id):
         self.message_id = message_id
@@ -57,6 +56,10 @@ class BaseTaskHandler(with_metaclass(TaskMetaClass, app.Task)):
         )
         self.channel = self.message_obj.data.get('channel')
         self.message_type = self.message_obj.data.get('message_type')
+        self.logger = get_logger(__name__).bind(
+            message_id=self.message_id,
+            **self.message_obj.data
+        )
 
     def run(self, message_id, *args, **kwargs):
         assert message_id, "message_id should be defined"

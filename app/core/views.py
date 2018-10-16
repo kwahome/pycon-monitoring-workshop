@@ -21,14 +21,20 @@ class BaseAPIView(views.APIView):
     authentication_classes = (APIKeyAuth, )
     permission_classes = (APIPermission,)
     allowed_methods = (GET, DELETE, HEAD, OPTIONS, PATCH, POST, PUT)
-    event = 'base_api_view'
-    logger = get_logger(__name__)
+    operation_tag = 'base_api_view'
 
     def __init__(self):
         super(BaseAPIView).__init__()
         self.req_data = None
+        self.logger = get_logger(__name__)
 
     def call_handler(self, request, *args, **kwargs):
+        self.logger.info(
+            '{0}_request'.format(self.operation),
+            view_class=self.__class__.__name__,
+            request_method=request.method,
+            request_data=request.data
+        )
         allowed, response = self.is_allowed(request=request)
         valid, self.req_data = self.validate(request.data)
         if allowed and not valid:
@@ -38,22 +44,18 @@ class BaseAPIView(views.APIView):
             )
         if allowed and valid:
             response = self.handle_request(request, *args, **kwargs)
+        self.logger.info(
+            '{0}_response'.format(self.operation),
+            view_class=self.__class__.__name__,
+            status_code=response.status_code,
+            response_data=response.data
+        )
         return response
 
     def post(self, request):
-        self.logger.info(
-            '{0}_request'.format(self.event),
-            handler=self.__class__.__name__,
-            request=request.data
-        )
         return self.call_handler(request)
 
     def get(self, request, *args, **kwargs):
-        self.logger.info(
-            '{0}_request'.format(self.event),
-            handler=self.__class__.__name__,
-            request=request.data
-        )
         return self.call_handler(request, *args, **kwargs)
 
     def validate(self, data):
@@ -78,14 +80,18 @@ class BaseAPIView(views.APIView):
             )
         return res
 
-    def respond(self, code=status.HTTP_200_OK, data=None):
-        self.logger.info(
-            '{0}_response'.format(self.event),
-            status_code=code,
-            handler=self.__class__.__name__,
-            response_data=data
+    @staticmethod
+    def respond(code=status.HTTP_200_OK, data=None,
+                content_type="application/json"):
+        return Response(
+            status=code,
+            data=data,
+            content_type=content_type
         )
-        return Response(status=code, data=data, content_type="application/json")
+
+    @property
+    def operation(self):
+        return self.operation_tag
 
     def handle_request(self, request, *args, **kwargs):
         raise NotImplementedError(

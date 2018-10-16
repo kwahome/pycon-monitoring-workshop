@@ -16,7 +16,7 @@ class HealthCheckView(BaseAPIView):
     running messaging service.
     """
     allowed_methods = (GET,)
-    event = 'health_check'
+    operation_tag = 'health_check'
 
     def handle_request(self, request, *args, **kwargs):
         return self.respond()
@@ -28,7 +28,7 @@ class SendMessageView(BaseAPIView):
     """
     allowed_methods = (POST,)
     validator = SendMessageRequestSerializer
-    event = 'send_message'
+    operation_tag = 'send_message'
 
     def handle_request(self, request, *args, **kwargs):
         try:
@@ -39,7 +39,7 @@ class SendMessageView(BaseAPIView):
                 response = self.route_task()
         except Exception as e:
             self.logger.exception(
-                '{0}_exception'.format(self.event),
+                '{0}_exception'.format(self.operation),
                 exception=str(e.__class__.__name__),
                 message=str(e),
                 handler=self.__class__.__name__,
@@ -79,11 +79,6 @@ class SendMessageView(BaseAPIView):
         if get_object_or_None(MessageRequest, message_id=self.message_id):
             message = "A message with messageId=`{0}` has already been " \
                       "received".format(self.message_id)
-            self.logger.info(
-                '{0}_duplicate_message'.format(self.event),
-                details=message,
-                handler=self.__class__.__name__,
-            )
             result = True, self.respond(
                 code=status.HTTP_409_CONFLICT,
                 data=dict(
@@ -103,7 +98,7 @@ class SendMessageView(BaseAPIView):
                         "supported".format(self.channel, self.message_type)
             )
             self.logger.info(
-                '{0}_routing_error'.format(self.event),
+                '{0}_routing_error'.format(self.operation),
                 message_obj=error_message,
                 handler=self.__class__.__name__,
             )
@@ -114,7 +109,7 @@ class SendMessageView(BaseAPIView):
         else:
             self.message_obj.save()
             self.logger.info(
-                '{0}_routing_start'.format(self.event),
+                '{0}_routing_start'.format(self.operation),
                 message_id=self.message_id,
                 handler=self.__class__.__name__,
             )
