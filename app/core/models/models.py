@@ -5,12 +5,12 @@ from jsonfield import JSONField
 from .managers import MessageManager
 
 
-received, started, failed, submitted, completed = (
+_received, _started, _failed, _submitted, _delivered = (
     "received",
     "started",
     "failed",
     "submitted",
-    "completed",
+    "delivered",
 )
 
 
@@ -31,12 +31,18 @@ class MessageChannels(ChoicesEnum):
     SMPP = 'smpp'
 
 
-class FSMChoices(ChoicesEnum):
-    RECEIVED = received
-    STARTED = started
-    FAILED = failed
-    SUBMITTED = submitted
-    COMPLETED = completed
+class FSMStates(ChoicesEnum):
+    """
+    Class that exposes possible FSM states with methods to yield a tuple
+    of those states as choices.
+
+    Also, to access the string values of the states, use FSMStates.<STATE>.value
+    """
+    RECEIVED = _received
+    STARTED = _started
+    FAILED = _failed
+    SUBMITTED = _submitted
+    DELIVERED = _delivered
 
 
 class BaseModel(models.Model):
@@ -50,20 +56,28 @@ class BaseModel(models.Model):
         abstract = True
 
     state = FSMField(
-        default=received,
-        choices=FSMChoices.yield_choices(),
+        default=_received,
+        choices=FSMStates.yield_choices(),
         protected=True,
         db_index=True
     )
 
-    @transition(field=state, source=[received, failed], target=started)
+    @transition(
+        field=state,
+        source=[_received, _failed],
+        target=_started
+    )
     def started(self):
         """
         Change message request to `started` state.
         """
         return
 
-    @transition(field=state, source="*", target=failed)
+    @transition(
+        field=state,
+        source="*",
+        target=_failed
+    )
     def failed(self):
         """
         For requests in `started` that cannot be submitted to Network
@@ -71,22 +85,23 @@ class BaseModel(models.Model):
         """
         return
 
-    @transition(field=state, source=[started, failed], target=submitted)
+    @transition(
+        field=state,
+        source=_started,
+        target=_submitted
+    )
     def submitted(self):
         """
         Change message request to `submitted` state from `started` state.
-
-        Can also transition from source=failed to for retries after the task
-        has been `failed` due to network issues experienced
         """
         return
 
     @transition(
         field=state,
-        source=[submitted, failed, completed],
-        target=completed
+        source=[_submitted, _failed, _delivered],
+        target=_delivered
     )
-    def completed(self):
+    def delivered(self):
         """
         Request was successfully `submitted` to message center/server and a
         response returned.

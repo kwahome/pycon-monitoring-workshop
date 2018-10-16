@@ -1,7 +1,7 @@
 import copy
 from six import with_metaclass
 from configuration.celery import app
-from .models import MessageRequest, started, failed, submitted, completed
+from .models import MessageRequest, FSMStates
 from .parsers import MessageDataParser
 from utils.logging import get_logger
 
@@ -67,7 +67,8 @@ class BaseTaskHandler(with_metaclass(TaskMetaClass, app.Task)):
     def task_handler(self, *args, **kwargs):
         try:
             self.logger.info("{}_task_start".format(self.event))
-            self._transition_state(started)
+            if self.transitions_allowed:
+                self._transition_state(FSMStates.STARTED.value)
             response = self.execute(
                 MessageDataParser(
                     self.message_id,
@@ -76,42 +77,43 @@ class BaseTaskHandler(with_metaclass(TaskMetaClass, app.Task)):
             )
             self.logger.info("execute_response", **response)
             self.logger.info("{}_task_end".format(self.event), **response)
-            self._transition_state(submitted)
+            if self.transitions_allowed:
+                self._transition_state(FSMStates.SUBMITTED.value)
         except Exception as e:
             self.logger.error(
                 '{}_task_error'.format(self.event),
                 error=str(e),
                 **self.message_obj.data.get('callback', {})
             )
-            self._transition_state(failed)
+            if self.transitions_allowed:
+                self._transition_state(FSMStates.SUBMITTED.value)
         return self.message_id
 
     def _transition_state(self, target):
-        if self.transitions_allowed:
-            try:
-                current = previous = self.message_obj.state
-                self.logger.info(
-                    "state_transition_start",
-                    message_id=self.message_obj.message_id,
-                    current_state=current,
-                    target_state=target
-                )
-                getattr(self.message_obj, target)()
-                self.message_obj.save()
-                self.logger.info(
-                    "state_transition_end",
-                    message_id=self.message_obj.message_id,
-                    previous_state=previous,
-                    new_state=self.message_obj.state
-                )
-            except Exception as e:
-                self.logger.error(
-                    "state_transition_error",
-                    message_id=self.message_obj.message_id,
-                    error=e.__class__.__name__,
-                    error_message=str(e)
-                )
-                raise e
+        try:
+            current = previous = self.message_obj.state
+            self.logger.info(
+                "state_transition_start",
+                message_id=self.message_obj.message_id,
+                current_state=current,
+                target_state=target
+            )
+            getattr(self.message_obj, target)()
+            self.message_obj.save()
+            self.logger.info(
+                "state_transition_end",
+                message_id=self.message_obj.message_id,
+                previous_state=previous,
+                new_state=self.message_obj.state
+            )
+        except Exception as e:
+            self.logger.error(
+                "state_transition_error",
+                message_id=self.message_obj.message_id,
+                error=e.__class__.__name__,
+                error_message=str(e)
+            )
+            raise e
 
     def _update_attempts(self):
         self.message_obj.data.update(
@@ -146,5 +148,5 @@ class SendMessageCallbackHandler(BaseTaskHandler):
     event_name = 'send_message_callback'
 
     def execute(self, params):
-        self._transition_state(completed)
+        self._transition_state(FSMStates.DELIVERED.value)
         return dict()
