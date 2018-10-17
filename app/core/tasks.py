@@ -62,7 +62,7 @@ class BaseTaskHandler(with_metaclass(TaskMetaClass, app.Task)):
         self.logger = get_logger(__name__).bind(
             operation="{0}_task".format(self.operation),
             message_id=self.message_id,
-            **self.message_data
+            message_data=self.message_data
         )
 
     def run(self, message_id, *args, **kwargs):
@@ -91,7 +91,6 @@ class BaseTaskHandler(with_metaclass(TaskMetaClass, app.Task)):
                 error=e.__class__.__name__,
                 message=str(e)
             )
-            raise e
             if self.transitions_allowed:
                 self._transition_state(FSMStates.FAILED.value)
         self.message_obj.save()  # persist updated message_obj for next task
