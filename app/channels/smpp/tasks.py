@@ -8,7 +8,7 @@ class SMPPSendMessageTaskHandler(BaseTaskHandler):
     name = 'smpp.sms.send_message'
     state_transition = False
     support_recon = True
-    event_name = 'send_smpp_message'
+    operation_tag = 'send_smpp_message'
 
     def execute(self, params):
         return dict(status=200, data={})

@@ -39,7 +39,7 @@ class BaseTaskHandler(with_metaclass(TaskMetaClass, app.Task)):
 
     support_recon = True
 
-    event_name = None
+    operation_tag = None
 
     def __init__(self):
         self.kwargs = dict()
@@ -57,6 +57,7 @@ class BaseTaskHandler(with_metaclass(TaskMetaClass, app.Task)):
         self.channel = self.message_obj.data.get('channel')
         self.message_type = self.message_obj.data.get('message_type')
         self.logger = get_logger(__name__).bind(
+            operation="{0}_task".format(self.operation),
             message_id=self.message_id,
             **self.message_obj.data
         )
@@ -69,7 +70,7 @@ class BaseTaskHandler(with_metaclass(TaskMetaClass, app.Task)):
 
     def task_handler(self, *args, **kwargs):
         try:
-            self.logger.info("{}_task_start".format(self.event))
+            self.logger.info(event="start")
             if self.transitions_allowed:
                 self._transition_state(FSMStates.STARTED.value)
             response = self.execute(
@@ -78,13 +79,12 @@ class BaseTaskHandler(with_metaclass(TaskMetaClass, app.Task)):
                     **self.message_obj.data
                 )
             )
-            self.logger.info("execute_response", **response)
-            self.logger.info("{}_task_end".format(self.event), **response)
+            self.logger.info(event="end", **response)
             if self.transitions_allowed:
                 self._transition_state(FSMStates.SUBMITTED.value)
         except Exception as e:
             self.logger.error(
-                '{}_task_error'.format(self.event),
+                event="error",
                 error=str(e),
                 **self.message_obj.data.get('callback', {})
             )
@@ -93,10 +93,11 @@ class BaseTaskHandler(with_metaclass(TaskMetaClass, app.Task)):
         return self.message_id
 
     def _transition_state(self, target):
+        tag = "state_trasition"
         try:
             current = previous = self.message_obj.state
             self.logger.info(
-                "state_transition_start",
+                event="{0}_start".format(tag),
                 message_id=self.message_obj.message_id,
                 current_state=current,
                 target_state=target
@@ -104,14 +105,14 @@ class BaseTaskHandler(with_metaclass(TaskMetaClass, app.Task)):
             getattr(self.message_obj, target)()
             self.message_obj.save()
             self.logger.info(
-                "state_transition_end",
+                event="{0}_end".format(tag),
                 message_id=self.message_obj.message_id,
                 previous_state=previous,
                 new_state=self.message_obj.state
             )
         except Exception as e:
             self.logger.error(
-                "state_transition_error",
+                event="{0}_error".format(tag),
                 message_id=self.message_obj.message_id,
                 error=e.__class__.__name__,
                 error_message=str(e)
@@ -125,8 +126,9 @@ class BaseTaskHandler(with_metaclass(TaskMetaClass, app.Task)):
         self.message_obj.save()
 
     @property
-    def event(self):
-        return self.event_name or self.message_obj.message_type
+    def operation(self):
+        return self.operation_tag or \
+               "{0}_{1}".format(self.channel, self.message_type)
 
     @property
     def transitions_allowed(self):
@@ -148,7 +150,7 @@ class SendMessageCallbackHandler(BaseTaskHandler):
     queue = 'all.send_message.callback'
     state_transition = False
     support_recon = True
-    event_name = 'send_message_callback'
+    operation_tag = 'send_message_callback'
 
     def execute(self, params):
         self._transition_state(FSMStates.DELIVERED.value)

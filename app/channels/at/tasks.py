@@ -8,7 +8,7 @@ class AfricasTalkingSendMessageTaskHandler(BaseTaskHandler):
     name = 'africas-talking.sms.send_message'
     state_transition = True
     support_recon = True
-    event_name = 'send_africastalking_message'
+    operation_tag = 'send_africastalking_message'
 
     def execute(self, params):
         return dict(status=200, data={})

@@ -1,3 +1,4 @@
+from six import with_metaclass
 from rest_framework import status, views
 from rest_framework.response import Response
 from app.auth.authentication import APIKeyAuth
@@ -8,55 +9,108 @@ DELETE, GET, HEAD, OPTIONS, PATCH, POST, PUT = \
     'delete', 'get', 'head', 'options', 'patch', 'post', 'put'
 
 
-class BaseAPIView(views.APIView):
+class APIViewMetaClass(type):
+    """
+    Metaclass to validate that an APIView class extending the abstract
+    BaseAPIView class has a handler for each of the allowed methods/operations.
+
+    It also dynamically adds the appropriate APIView handler method for each
+    REST operation (read as verb) allowed e.g. delete, get, patch, post, put.
+
+    It does not operate on any class object with the attribute `abstract` set
+    to True.
+    """
+
+    def __init__(cls, name, bases, attr):
+        super(APIViewMetaClass, cls).__init__(name, bases, attr)
+
+        def _(self, request, *args, **kwargs):
+            """
+            Abstract method to handle a REST operation (read as verb)
+            e.g. delete, get, patch, post, put.
+
+            This method will be dynamically added/injected into the class
+            object as it's being validated & loaded.
+            """
+            return self.handle(request, *args, **kwargs)
+
+        if not attr.get('abstract', False):
+            for attr in attr.get('allowed_methods', ()):
+                setattr(cls, attr, _)
+                required_method = '{0}_handler'.format(attr)
+                if not hasattr(cls, required_method):
+                    raise NotImplementedError(
+                        """Required method {0} has not been implemented in 
+                        class {1}""".format(required_method, name)
+                    )
+
+
+class BaseAPIView(with_metaclass(APIViewMetaClass, views.APIView)):
     """
     Base API View class that should be inherited by all API views.
 
     Inherits from DRF APIView & implements custom logic that would otherwise
     be duplicated on every view class.
 
-    Children classes must implement the `handle_request` method which
-    describes/implements the behaviour of how an API request should be fulfilled
+    Children classes must implement a handler method for each of the allowed
+    methods named with the below signature:
+
+        def <REST operation>_handler(self, request, *args, **kwargs):
+                # do stuff for this operation
+
+    e.g.
+        def get_handler(self, request, *args, **kwargs)
+            # do stuff for a get request
+
+    This method describes/implements the behaviour of how an API request should
+    be fulfilled and will be called for every request of that method.
+
+    Extending this class only requires you to:
+        1. override the `allowed_methods` class attribute which defines a tuple
+        indicating what API requests are permitted; e.g.
+
+            allowed_methods = ('get', 'patch', 'post')
+
+        2. implement a handler method for each of the allowed methods with a
+        signature as described in paragraphs above.
     """
+    abstract = True
     authentication_classes = (APIKeyAuth, )
     permission_classes = (APIPermission,)
     allowed_methods = (GET, DELETE, HEAD, OPTIONS, PATCH, POST, PUT)
-    operation_tag = 'base_api_view'
+    operation_tag = ''
 
     def __init__(self):
         super(BaseAPIView).__init__()
         self.req_data = None
-        self.logger = get_logger(__name__)
+        self.logger = get_logger(__name__).bind(
+            operation="{0}_view".format(self.operation)
+        )
 
-    def call_handler(self, request, *args, **kwargs):
+    def handle(self, request, *args, **kwargs):
         self.logger.info(
-            '{0}_request'.format(self.operation),
+            event='request',
             view_class=self.__class__.__name__,
             request_method=request.method,
             request_data=request.data
         )
         allowed, response = self.is_allowed(request=request)
         valid, self.req_data = self.validate(request.data)
-        if allowed and not valid:
+        if allowed and valid:
+            handler = '{0}_handler'.format(request.method.lower())
+            response = getattr(self, handler)(request, *args, **kwargs)
+        else:
             response = self.respond(
                 code=status.HTTP_400_BAD_REQUEST,
                 data=self.req_data
             )
-        if allowed and valid:
-            response = self.handle_request(request, *args, **kwargs)
         self.logger.info(
-            '{0}_response'.format(self.operation),
+            event='response',
             view_class=self.__class__.__name__,
             status_code=response.status_code,
             response_data=response.data
         )
         return response
-
-    def post(self, request):
-        return self.call_handler(request)
-
-    def get(self, request, *args, **kwargs):
-        return self.call_handler(request, *args, **kwargs)
 
     def validate(self, data):
         valid = True
@@ -92,8 +146,3 @@ class BaseAPIView(views.APIView):
     @property
     def operation(self):
         return self.operation_tag
-
-    def handle_request(self, request, *args, **kwargs):
-        raise NotImplementedError(
-            "`handle` method has not been implemented"
-        )

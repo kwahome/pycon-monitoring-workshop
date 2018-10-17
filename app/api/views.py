@@ -18,7 +18,7 @@ class HealthCheckView(BaseAPIView):
     allowed_methods = (GET,)
     operation_tag = 'health_check'
 
-    def handle_request(self, request, *args, **kwargs):
+    def get_handler(self, request, *args, **kwargs):
         return self.respond()
 
 
@@ -30,7 +30,7 @@ class SendMessageView(BaseAPIView):
     validator = SendMessageRequestSerializer
     operation_tag = 'send_message'
 
-    def handle_request(self, request, *args, **kwargs):
+    def post_handler(self, request, *args, **kwargs):
         try:
             self._init_variables()
             self._init_message_request()
@@ -77,17 +77,17 @@ class SendMessageView(BaseAPIView):
     def duplicate_check(self):
         result = False, None
         if get_object_or_None(MessageRequest, message_id=self.message_id):
-            message = "A message with messageId=`{0}` has already been " \
-                      "received".format(self.message_id)
             result = True, self.respond(
                 code=status.HTTP_409_CONFLICT,
                 data=dict(
-                    detail=message
+                    detail="A message with messageId=`{0}` has already been "
+                           "received".format(self.message_id)
                 )
             )
         return result
 
     def route_task(self):
+        tag = "routing"
         routing_handler = ROUTING_REGISTRY.get(
             self.message_type, {}
         ).get(self.channel)
@@ -98,7 +98,7 @@ class SendMessageView(BaseAPIView):
                         "supported".format(self.channel, self.message_type)
             )
             self.logger.info(
-                '{0}_routing_error'.format(self.operation),
+                event='{0}_error'.format(tag),
                 message_obj=error_message,
                 handler=self.__class__.__name__,
             )
@@ -109,7 +109,7 @@ class SendMessageView(BaseAPIView):
         else:
             self.message_obj.save()
             self.logger.info(
-                '{0}_routing_start'.format(self.operation),
+                event='{0}_start'.format(tag),
                 message_id=self.message_id,
                 handler=self.__class__.__name__,
             )

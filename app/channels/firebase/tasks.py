@@ -8,7 +8,7 @@ class FirebasePushNotificationTaskHandler(BaseTaskHandler):
     name = 'firebase.push.send_message'
     state_transition = True
     support_recon = True
-    event_name = 'send_push_notification'
+    operation_tag = 'send_push_notification'
 
     def execute(self, params):
         return dict(status=200, data={})
