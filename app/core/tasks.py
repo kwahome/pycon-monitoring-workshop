@@ -2,8 +2,9 @@ import copy
 from six import with_metaclass
 from configuration.celery import app
 from .models import MessageRequest, FSMStates
-from .parsers import MessageDataParser
+from .parsers import MessageDataParser, CallbackDataParser
 from utils.logging import get_logger
+from utils.requests import requests
 
 
 class TaskMetaClass(type):
@@ -44,6 +45,7 @@ class BaseTaskHandler(with_metaclass(TaskMetaClass, app.Task)):
     def __init__(self):
         self.kwargs = dict()
         self.message_obj = None
+        self.message_data = None
         self.message_id = None
         self.channel = None
         self.message_type = None
@@ -54,12 +56,13 @@ class BaseTaskHandler(with_metaclass(TaskMetaClass, app.Task)):
         self.message_obj = MessageRequest.objects.get_latest_message(
             message_id=self.message_id
         )
-        self.channel = self.message_obj.data.get('channel')
-        self.message_type = self.message_obj.data.get('message_type')
+        self.message_data = self.message_obj.data['message']
+        self.channel = self.message_data.get('channel')
+        self.message_type = self.message_data.get('message_type')
         self.logger = get_logger(__name__).bind(
             operation="{0}_task".format(self.operation),
             message_id=self.message_id,
-            **self.message_obj.data
+            **self.message_data
         )
 
     def run(self, message_id, *args, **kwargs):
@@ -76,24 +79,26 @@ class BaseTaskHandler(with_metaclass(TaskMetaClass, app.Task)):
             response = self.execute(
                 MessageDataParser(
                     self.message_id,
-                    **self.message_obj.data
+                    **self.message_data
                 )
             )
-            self.logger.info(event="end", **response)
+            self.logger.info(event="end", task_response=response)
             if self.transitions_allowed:
                 self._transition_state(FSMStates.SUBMITTED.value)
         except Exception as e:
             self.logger.error(
                 event="error",
-                error=str(e),
-                **self.message_obj.data.get('callback', {})
+                error=e.__class__.__name__,
+                message=str(e)
             )
+            raise e
             if self.transitions_allowed:
-                self._transition_state(FSMStates.SUBMITTED.value)
+                self._transition_state(FSMStates.FAILED.value)
+        self.message_obj.save()  # persist updated message_obj for next task
         return self.message_id
 
     def _transition_state(self, target):
-        tag = "state_trasition"
+        tag = "state_transition"
         try:
             current = previous = self.message_obj.state
             self.logger.info(
@@ -120,8 +125,9 @@ class BaseTaskHandler(with_metaclass(TaskMetaClass, app.Task)):
             raise e
 
     def _update_attempts(self):
-        self.message_obj.data.update(
-            dict(attempts=self.message_obj.data.get('attempts', 0)+1)
+        current_attempts = self.message_obj.data['status'].get('attempts', 0)
+        self.message_obj.data['status'].update(
+            dict(attempts=current_attempts+1)
         )
         self.message_obj.save()
 
@@ -149,9 +155,20 @@ class SendMessageCallbackHandler(BaseTaskHandler):
     name = 'all.send_message.callback'
     queue = 'all.send_message.callback'
     state_transition = False
-    support_recon = True
     operation_tag = 'send_message_callback'
 
     def execute(self, params):
-        self._transition_state(FSMStates.DELIVERED.value)
-        return dict()
+        response = results = self.message_obj.data['status'].get('results', {})
+        callback_url = self.message_obj.data['callback'].get('url')
+        if results:
+            self._transition_state(FSMStates.DELIVERED.value)
+            callback_data = CallbackDataParser(
+                self.message_obj.message_id,
+                self.message_obj.state,
+                **results
+            )
+            callback_data = callback_data.to_json()
+            self.message_obj.data['callback']['payload'] = callback_data
+            if callback_url:
+                response = requests.post(callback_url, callback_data)
+        return response

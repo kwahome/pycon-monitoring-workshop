@@ -60,17 +60,22 @@ class SendMessageView(BaseAPIView):
         self.recipient_id = self.req_data["recipientId"]
         self.message = self.req_data["message"]
         self.priority = self.req_data["priority"]
+        self.callback = self.req_data.get("callback", None)
 
     def _init_message_request(self):
         self.message_obj = MessageRequest(
             message_id=self.message_id,
             data=dict(
-                sender_id=self.sender_id,
-                recipient_id=self.recipient_id,
-                message_type=self.message_type,
-                channel=self.channel,
-                message=self.message,
-                priority=self.priority
+                message=dict(
+                    sender_id=self.sender_id,
+                    recipient_id=self.recipient_id,
+                    message_type=self.message_type,
+                    channel=self.channel,
+                    message=self.message,
+                    priority=self.priority,
+                ),
+                status=dict(),
+                callback=dict(url=self.callback)
             )
         )
 

@@ -1,26 +1,22 @@
 # import package
 import africastalking
 
-# Initialize SDK
-username = "YOUR_USERNAME"
-# use 'sandbox' for development in the test environment
-api_key = "YOUR_API_KEY"
-# use your sandbox app API key for development in the test environment
-africastalking.initialize(username, api_key)
 
-# Initialize a service e.g. SMS
-sms = africastalking.SMS
+class AfricasTalkingClient:
+    """
 
-# Use the service synchronously
-response = sms.send("Hello Message!", ["+2547xxxxxx"])
-print(response)
+    """
+    def __init__(self, username, api_key):
+        africastalking.initialize(username, api_key)
+        self.sms = africastalking.SMS
 
-
-# Or use it asynchronously
-def on_finish(error, response):
-    if error is not None:
-        raise error
-    print(response)
-
-
-sms.send("Hello Message!", ["+2547xxxxxx"], callback=on_finish)
+    def send_message(self, recipients, message, sender=None, callback=None):
+        if not isinstance(recipients, list):
+            raise TypeError(
+                "`recipients` expected to be a `list` but `{0}` found".format(
+                    type(recipients)
+                )
+            )
+        return self.sms.send(
+            message, recipients, sender_id=sender, callback=callback
+        )
