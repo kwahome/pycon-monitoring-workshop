@@ -25,6 +25,8 @@ class MessageDataParser(BaseDataParser):
         self.message_id = message_id
 
         for key, value in list(kwargs.items()):
+            # split comma separated string of recipients into a list
+            value = value.split(",") if key is "recipients" else value
             setattr(self, key, value)
 
 

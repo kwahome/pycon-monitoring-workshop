@@ -106,9 +106,9 @@ class BaseModel(models.Model):
         Request was successfully `submitted` to message center/server and a
         response returned.
 
-        Can also transition from source=completed to accommodate for delivery
+        Can also transition from source=`delivered` to accommodate for delivery
         notifications from message center/server even after the task has
-        been `completed`
+        been `delivered`
         """
         return
 

@@ -57,7 +57,7 @@ class SendMessageView(BaseAPIView):
         self.channel = self.req_data["channel"]
         self.message_type = self.req_data["messageType"]
         self.sender_id = self.req_data["senderId"]
-        self.recipient_id = self.req_data["recipientId"]
+        self.recipients = self.req_data["recipients"]
         self.message = self.req_data["message"]
         self.priority = self.req_data["priority"]
         self.callback = self.req_data.get("callback", None)
@@ -68,7 +68,8 @@ class SendMessageView(BaseAPIView):
             data=dict(
                 message=dict(
                     sender_id=self.sender_id,
-                    recipient_id=self.recipient_id,
+                    # store as comma separated string of recipients
+                    recipients=",".join(self.recipients),
                     message_type=self.message_type,
                     channel=self.channel,
                     message=self.message,

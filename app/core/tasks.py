@@ -160,7 +160,10 @@ class SendMessageCallbackHandler(BaseTaskHandler):
         response = results = self.message_obj.data['status'].get('results', {})
         callback_url = self.message_obj.data['callback'].get('url')
         if results:
-            self._transition_state(FSMStates.DELIVERED.value)
+            if results["SMSMessageData"]["status"] == "Success":
+                self._transition_state(FSMStates.DELIVERED.value)
+            else:
+                self._transition_state(FSMStates.FAILED.value)
             callback_data = CallbackDataParser(
                 self.message_obj.message_id,
                 self.message_obj.state,
@@ -169,5 +172,5 @@ class SendMessageCallbackHandler(BaseTaskHandler):
             callback_data = callback_data.to_json()
             self.message_obj.data['callback']['payload'] = callback_data
             if callback_url:
-                response = requests.post(callback_url, callback_data)
+                response = requests.post(callback_url, data=callback_data)
         return response

@@ -63,11 +63,12 @@ class RoutingHandlerMetaClass(type):
             if ROUTING_REGISTRY[cls.attr['message_type']].get(
                     cls.attr['channel']
             ):
-                raise IndexError(
+                raise ValueError(
                     """A handler of message_type=`{0}` for channel=`{1}` 
                     has already been registered""".format(
                         cls.attr['message_type'], cls.attr['channel']
-                    ))
+                    )
+                )
             ROUTING_REGISTRY[cls.attr['message_type']].update(
                 {cls.attr['channel']: cls}
             )

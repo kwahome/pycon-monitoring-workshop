@@ -7,7 +7,7 @@ class MessageManager(models.Manager):
     """
     Used select_for_update() as it locks the resultant query set until the end
     of the transaction, this will eliminate the errors (TransitionNotAllowed)
-    that may occur when when two state transitions are attempted simultaneously
+    that may occur when when two state transitions are attempted simultaneously.
     """
 
     def get_latest_message(self, message_id):

@@ -18,7 +18,7 @@ class AfricasTalkingSendMessageTaskHandler(BaseTaskHandler):
                 settings.AFRICAS_TALKING_USERNAME,
                 settings.AFRICAS_TALKING_API_KEY
             ).send_message(
-                params.recipient_id.split(","), params.message
+                params.recipients.split(","), params.message
             )
             self.message_obj.data['status']['results'] = results
         except Exception as e:
