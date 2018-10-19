@@ -1,4 +1,5 @@
 from app.core.tasks import BaseTaskHandler
+from app.lib.fcm import send_message
 
 
 class FirebasePushNotificationTaskHandler(BaseTaskHandler):
@@ -11,4 +12,11 @@ class FirebasePushNotificationTaskHandler(BaseTaskHandler):
     operation_tag = 'send_push_notification'
 
     def execute(self, params):
-        return dict(status=200, data={})
+        try:
+            results = send_message(
+                params.recipients.split(","), params.message,  dry_run=True
+            )
+            self.message_obj.data['status']['results'] = results
+        except Exception as e:
+            raise e
+        return results

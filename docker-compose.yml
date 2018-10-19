@@ -32,6 +32,7 @@ services:
       - DB_PORT=5432
       - HTTPBIN_URL=http://httpbin:8000
       - BROKER_URL=amqp://guest:guest@rabbitmq:5672//
+      - GCLOUD_PROJECT=pycon-monitoring-workshop
     volumes:
       - ./:/usr/src/app
       - /app/static
@@ -63,6 +64,7 @@ services:
       - DB_PORT=5432
       - HTTPBIN_URL=http://httpbin:8000
       - BROKER_URL=amqp://guest:guest@rabbitmq:5672//
+      - GCLOUD_PROJECT=pycon-monitoring-workshop
     volumes:
       - ./:/usr/src/app
       - /app/static
