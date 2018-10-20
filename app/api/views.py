@@ -31,26 +31,10 @@ class SendMessageView(BaseAPIView):
     operation_tag = 'send_message'
 
     def post_handler(self, request, *args, **kwargs):
-        try:
-            self._init_variables()
-            self._init_message_request()
-            duplicate, response = self.duplicate_check()
-            if not duplicate:
-                response = self.route_task()
-        except Exception as e:
-            self.logger.exception(
-                '{0}_exception'.format(self.operation),
-                exception=str(e.__class__.__name__),
-                message=str(e),
-                handler=self.__class__.__name__,
-            )
-            response = self.respond(
-                code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                data=dict(
-                    detail='An internal server error has occured.'
-                )
-            )
-        return response
+        self._init_variables()
+        self._init_message_request()
+        duplicate, response = self.duplicate_check()
+        return self.route_task() if not duplicate else response
 
     def _init_variables(self):
         self.message_id = self.req_data['messageId']
@@ -60,7 +44,7 @@ class SendMessageView(BaseAPIView):
         self.recipients = self.req_data["recipients"]
         self.message = self.req_data["message"]
         self.priority = self.req_data["priority"]
-        self.callback = self.req_data.get("callback", None)
+        self.callback = self.req_data.get("callback")
 
     def _init_message_request(self):
         self.message_obj = MessageRequest(
@@ -83,21 +67,17 @@ class SendMessageView(BaseAPIView):
     def duplicate_check(self):
         result = False, None
         if get_object_or_None(MessageRequest, message_id=self.message_id):
-            result = True, self.respond(
-                code=status.HTTP_409_CONFLICT,
-                data=dict(
-                    detail="A message with messageId=`{0}` has already been "
-                           "received".format(self.message_id)
-                )
+            message = dict(
+                detail="A message with messageId=`{0}` has already been "
+                       "received".format(self.message_id)
             )
+            result = True, self.conflicting_request(data=message)
         return result
 
     def route_task(self):
         tag = "routing"
-        routing_handler = ROUTING_REGISTRY.get(
-            self.message_type, {}
-        ).get(self.channel)
-
+        routing_handler = ROUTING_REGISTRY.get(self.message_type, {}).get(
+            self.channel)
         if routing_handler is None:
             error_message = dict(
                 details="channel `{0}` and message type `{1}` not "
@@ -108,10 +88,7 @@ class SendMessageView(BaseAPIView):
                 message_obj=error_message,
                 handler=self.__class__.__name__,
             )
-            response = self.respond(
-                code=status.HTTP_400_BAD_REQUEST,
-                data=error_message
-            )
+            response = self.bad_request(data=error_message)
         else:
             self.message_obj.save()
             self.logger.info(
@@ -120,5 +97,10 @@ class SendMessageView(BaseAPIView):
                 handler=self.__class__.__name__,
             )
             routing_handler(self.message_obj).route_task()
-            response = self.respond(code=status.HTTP_202_ACCEPTED)
+            self.logger.info(
+                event='{0}_end'.format(tag),
+                message_id=self.message_id,
+                handler=self.__class__.__name__,
+            )
+            response = self.request_accepted()
         return response

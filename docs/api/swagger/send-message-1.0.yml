@@ -42,7 +42,7 @@ definitions:
     required:
       - messageId
       - senderId
-      - recipientId
+      - recipients
       - messageType
       - channel
       - message
@@ -55,10 +55,12 @@ definitions:
         type: string
         maxLength: 64
         example: "0700123456"
-      recipientId:
-        type: string
-        maxLength: 64
-        example: "0700987654"
+      recipients:
+        type: array
+        items:
+          type: string
+          maxLength: 64
+          example: "0700987654"
       messageType:
         type: string
         enum: ['sms', 'push']

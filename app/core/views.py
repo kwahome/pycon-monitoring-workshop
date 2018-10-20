@@ -1,3 +1,4 @@
+import time
 from six import with_metaclass
 from rest_framework import status, views
 from rest_framework.response import Response
@@ -24,7 +25,7 @@ class APIViewMetaClass(type):
     def __init__(cls, name, bases, attr):
         super(APIViewMetaClass, cls).__init__(name, bases, attr)
 
-        def _(self, request, *args, **kwargs):
+        def _abstract_method(self, request, *args, **kwargs):
             """
             Abstract method to handle a REST operation (read as verb)
             e.g. delete, get, patch, post, put.
@@ -36,7 +37,7 @@ class APIViewMetaClass(type):
 
         if not attr.get('abstract', False):
             for attr in attr.get('allowed_methods', ()):
-                setattr(cls, attr, _)
+                setattr(cls, attr, _abstract_method)
                 required_method = '{0}_handler'.format(attr)
                 if not hasattr(cls, required_method):
                     raise NotImplementedError(
@@ -83,33 +84,54 @@ class BaseAPIView(with_metaclass(APIViewMetaClass, views.APIView)):
     def __init__(self):
         super(BaseAPIView).__init__()
         self.req_data = None
+        self.start_time = None
+        self.end_time = None
+        self.duration = None
         self.logger = get_logger(__name__).bind(
             operation="{0}_view".format(self.operation)
         )
 
-    def handle(self, request, *args, **kwargs):
+    def initial(self, request, *args, **kwargs):
+        self.start_time = time.time()
         self.logger.info(
             event='request',
+            start_time=self.start_time,
             view_class=self.__class__.__name__,
             request_method=request.method,
             request_data=request.data
         )
-        allowed, response = self.is_allowed(request=request)
-        valid, self.req_data = self.validate(request.data)
-        if allowed and valid:
-            handler = '{0}_handler'.format(request.method.lower())
-            response = getattr(self, handler)(request, *args, **kwargs)
-        else:
-            response = self.respond(
-                code=status.HTTP_400_BAD_REQUEST,
-                data=self.req_data
-            )
+        super(BaseAPIView, self).initial(request, *args, **kwargs)
+
+    def finalize_response(self, request, response, *args, **kwargs):
+        self.end_time = time.time()
+        self.duration = (self.end_time - self.start_time) * 1000
         self.logger.info(
             event='response',
             view_class=self.__class__.__name__,
             status_code=response.status_code,
-            response_data=response.data
+            response_data=response.data,
+            duration_millis=self.duration
         )
+        return super(BaseAPIView, self).finalize_response(
+            request, response, *args, **kwargs)
+
+    def handle(self, request, *args, **kwargs):
+        allowed, response = self.is_allowed(request=request)
+        valid, self.req_data = self.validate(request.data)
+        if allowed and valid:
+            handler = '{0}_handler'.format(request.method.lower())
+            try:
+                response = getattr(self, handler)(request, *args, **kwargs)
+            except Exception as e:
+                self.logger.exception(
+                    '{0}_exception'.format(self.operation),
+                    exception=str(e.__class__.__name__),
+                    message=str(e),
+                    view_class=self.__class__.__name__
+                )
+                response = self.internal_server_error()
+        else:
+            response = self.bad_request()
         return response
 
     def validate(self, data):
@@ -126,22 +148,31 @@ class BaseAPIView(with_metaclass(APIViewMetaClass, views.APIView)):
     def is_allowed(self, request):
         res = True, None
         if request.method.lower() not in self.allowed_methods:
-            res = False, self.respond(
-                code=status.HTTP_405_METHOD_NOT_ALLOWED,
-                data=dict(
-                    detail='Method "{}" not allowed.'.format(request.method)
-                )
-            )
+            res = False, self.http_method_not_allowed(request=request)
         return res
+
+    def bad_request(self, data=None):
+        return self.respond(
+            code=status.HTTP_400_BAD_REQUEST,
+            data=data or self.req_data
+        )
+
+    def conflicting_request(self, data=None):
+        return self.respond(code=status.HTTP_409_CONFLICT, data=data)
+
+    def internal_server_error(self, data=None):
+        return self.respond(
+            code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            data=data or dict(detail='An internal server error has occurred.')
+        )
+
+    def request_accepted(self, data=None):
+        return self.respond(code=status.HTTP_202_ACCEPTED, data=data)
 
     @staticmethod
     def respond(code=status.HTTP_200_OK, data=None,
                 content_type="application/json"):
-        return Response(
-            status=code,
-            data=data,
-            content_type=content_type
-        )
+        return Response(status=code, data=data, content_type=content_type)
 
     @property
     def operation(self):
