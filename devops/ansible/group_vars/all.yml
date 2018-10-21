@@ -7,6 +7,7 @@ channels:
  - at
  - firebase
  - smpp
+ - httpbin
 
 CELERY_WORKERS_CONF:
   - CHANNEL: all
@@ -26,6 +27,12 @@ CELERY_WORKERS_CONF:
     CONCURRENCY: "{{DEFAULT_CELERY_CONCURRENCY}}"
     QUEUES:
       - firebase.push.send_message
+
+  - CHANNEL: httpbin
+    TYPE: dummy
+    CONCURRENCY: "{{DEFAULT_CELERY_CONCURRENCY}}"
+    QUEUES:
+      - httpbin.dummy.send_message
 
   - CHANNEL: smpp
     TYPE: sms

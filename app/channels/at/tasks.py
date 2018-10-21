@@ -1,5 +1,5 @@
 from app.core.tasks import BaseTaskHandler
-from app.lib.africas_talking import AfricasTalkingClient
+from app.lib.at.africas_talking import AfricasTalkingClient
 from django.conf import settings
 
 
@@ -13,14 +13,11 @@ class AfricasTalkingSendMessageTaskHandler(BaseTaskHandler):
     operation_tag = 'send_africastalking_message'
 
     def execute(self, params):
-        try:
-            results = AfricasTalkingClient(
-                settings.AFRICAS_TALKING_USERNAME,
-                settings.AFRICAS_TALKING_API_KEY
-            ).send_message(
-                params.recipients.split(","), params.message
-            )
-            self.message_obj.data['status']['results'] = results
-        except Exception as e:
-            raise e
+        results = AfricasTalkingClient(
+            settings.AFRICAS_TALKING_USERNAME,
+            settings.AFRICAS_TALKING_API_KEY
+        ).send_message(
+            params.recipients, params.message
+        )
+        self.message_obj.data['status']['results'] = results
         return results

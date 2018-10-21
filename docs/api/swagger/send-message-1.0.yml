@@ -63,10 +63,10 @@ definitions:
           example: "0700987654"
       messageType:
         type: string
-        enum: ['sms', 'push']
+        enum: ['dummy', 'push', 'sms']
       channel:
         type: string
-        enum: ['africas-talking', 'firebase', 'smpp']
+        enum: ['africas-talking', 'firebase', 'httpbin', 'smpp']
       message:
         type: string
         maxLength: 200

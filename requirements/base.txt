@@ -14,5 +14,6 @@ jsonfield
 naz
 psycopg2-binary
 raven
+redis
 requests
 structlog==18.1.0

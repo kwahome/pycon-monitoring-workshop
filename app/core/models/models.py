@@ -21,6 +21,7 @@ class ChoicesEnum(Enum):
 
 
 class MessageTypes(ChoicesEnum):
+    DUMMY = 'dummy'
     PUSH = 'push'
     SMS = 'sms'
 
@@ -28,6 +29,7 @@ class MessageTypes(ChoicesEnum):
 class MessageChannels(ChoicesEnum):
     AT = 'africas-talking'
     FIREBASE = 'firebase'
+    HTTPBIN = 'httpbin'
     SMPP = 'smpp'
 
 

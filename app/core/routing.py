@@ -107,3 +107,11 @@ class PushNotificationAbstractRoutingHandler(RoutingAbstractHandler):
     """
     abstract = True
     message_type = MessageTypes.PUSH.value
+
+
+class DummyNotificationAbstractRoutingHandler(RoutingAbstractHandler):
+    """
+    Abstract `push` notification routing handler
+    """
+    abstract = True
+    message_type = MessageTypes.DUMMY.value

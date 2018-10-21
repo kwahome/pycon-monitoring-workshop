@@ -71,7 +71,7 @@ class SendMessageView(BaseAPIView):
                 detail="A message with messageId=`{0}` has already been "
                        "received".format(self.message_id)
             )
-            result = True, self.conflicting_request(data=message)
+            result = True, self.http_conflicting_request(data=message)
         return result
 
     def route_task(self):
@@ -88,7 +88,7 @@ class SendMessageView(BaseAPIView):
                 message_obj=error_message,
                 handler=self.__class__.__name__,
             )
-            response = self.bad_request(data=error_message)
+            response = self.http_bad_request(data=error_message)
         else:
             self.message_obj.save()
             self.logger.info(
@@ -102,5 +102,5 @@ class SendMessageView(BaseAPIView):
                 message_id=self.message_id,
                 handler=self.__class__.__name__,
             )
-            response = self.request_accepted()
+            response = self.http_request_accepted()
         return response

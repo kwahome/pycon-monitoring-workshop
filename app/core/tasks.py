@@ -1,4 +1,5 @@
 import copy
+import time
 from six import with_metaclass
 from configuration.celery import app
 from .models import MessageRequest, FSMStates
@@ -50,6 +51,9 @@ class BaseTaskHandler(with_metaclass(TaskMetaClass, app.Task)):
         self.channel = None
         self.message_type = None
         self.logger = None
+        self.start_time = None
+        self.end_time = None
+        self.duration = None
 
     def initiate(self, message_id):
         self.message_id = message_id
@@ -72,17 +76,15 @@ class BaseTaskHandler(with_metaclass(TaskMetaClass, app.Task)):
         return self.task_handler(*args, **kwargs)
 
     def task_handler(self, *args, **kwargs):
+        response = None
         try:
-            self.logger.info(event="start")
+            self.start_time = time.time()
+            self.logger.info(event="start", start_time=self.start_time)
             if self.transitions_allowed:
                 self._transition_state(FSMStates.STARTED.value)
             response = self.execute(
-                MessageDataParser(
-                    self.message_id,
-                    **self.message_data
-                )
+                MessageDataParser(self.message_id, **self.message_data)
             )
-            self.logger.info(event="end", task_response=response)
             if self.transitions_allowed:
                 self._transition_state(FSMStates.SUBMITTED.value)
         except Exception as e:
@@ -93,8 +95,17 @@ class BaseTaskHandler(with_metaclass(TaskMetaClass, app.Task)):
             )
             if self.transitions_allowed:
                 self._transition_state(FSMStates.FAILED.value)
-        self.message_obj.save()  # persist updated message_obj for next task
-        return self.message_id
+        finally:
+            self.end_time = time.time()
+            self.duration = (self.end_time - self.start_time) * 1000
+            self.logger.info(
+                event="end",
+                task_response=response,
+                end_time=self.end_time,
+                duration_millis=self.duration
+            )
+            self.message_obj.save()  # persist updated message_obj for next task
+            return self.message_id
 
     def _transition_state(self, target):
         tag = "state_transition"
@@ -160,10 +171,7 @@ class SendMessageCallbackHandler(BaseTaskHandler):
         response = results = self.message_obj.data['status'].get('results', {})
         callback_url = self.message_obj.data['callback'].get('url')
         if results:
-            if results["SMSMessageData"]["status"] == "Success":
-                self._transition_state(FSMStates.DELIVERED.value)
-            else:
-                self._transition_state(FSMStates.FAILED.value)
+            self._transition_state(FSMStates.DELIVERED.value)
             callback_data = CallbackDataParser(
                 self.message_obj.message_id,
                 self.message_obj.state,

@@ -25,7 +25,7 @@ class APIViewMetaClass(type):
     def __init__(cls, name, bases, attr):
         super(APIViewMetaClass, cls).__init__(name, bases, attr)
 
-        def _abstract_method(self, request, *args, **kwargs):
+        def __abstract_handler__(self, request, *args, **kwargs):
             """
             Abstract method to handle a REST operation (read as verb)
             e.g. delete, get, patch, post, put.
@@ -37,7 +37,7 @@ class APIViewMetaClass(type):
 
         if not attr.get('abstract', False):
             for attr in attr.get('allowed_methods', ()):
-                setattr(cls, attr, _abstract_method)
+                setattr(cls, attr, __abstract_handler__)
                 required_method = '{0}_handler'.format(attr)
                 if not hasattr(cls, required_method):
                     raise NotImplementedError(
@@ -95,10 +95,10 @@ class BaseAPIView(with_metaclass(APIViewMetaClass, views.APIView)):
         self.start_time = time.time()
         self.logger.info(
             event='request',
-            start_time=self.start_time,
             view_class=self.__class__.__name__,
             request_method=request.method,
-            request_data=request.data
+            request_data=request.data,
+            start_time=self.start_time
         )
         super(BaseAPIView, self).initial(request, *args, **kwargs)
 
@@ -110,6 +110,7 @@ class BaseAPIView(with_metaclass(APIViewMetaClass, views.APIView)):
             view_class=self.__class__.__name__,
             status_code=response.status_code,
             response_data=response.data,
+            end_time=self.end_time,
             duration_millis=self.duration
         )
         return super(BaseAPIView, self).finalize_response(
@@ -129,9 +130,9 @@ class BaseAPIView(with_metaclass(APIViewMetaClass, views.APIView)):
                     message=str(e),
                     view_class=self.__class__.__name__
                 )
-                response = self.internal_server_error()
+                response = self.http_internal_server_error()
         else:
-            response = self.bad_request()
+            response = self.http_bad_request()
         return response
 
     def validate(self, data):
@@ -151,22 +152,22 @@ class BaseAPIView(with_metaclass(APIViewMetaClass, views.APIView)):
             res = False, self.http_method_not_allowed(request=request)
         return res
 
-    def bad_request(self, data=None):
+    def http_bad_request(self, data=None):
         return self.respond(
             code=status.HTTP_400_BAD_REQUEST,
             data=data or self.req_data
         )
 
-    def conflicting_request(self, data=None):
+    def http_conflicting_request(self, data=None):
         return self.respond(code=status.HTTP_409_CONFLICT, data=data)
 
-    def internal_server_error(self, data=None):
+    def http_internal_server_error(self, data=None):
         return self.respond(
             code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             data=data or dict(detail='An internal server error has occurred.')
         )
 
-    def request_accepted(self, data=None):
+    def http_request_accepted(self, data=None):
         return self.respond(code=status.HTTP_202_ACCEPTED, data=data)
 
     @staticmethod

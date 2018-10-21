@@ -49,6 +49,7 @@ INSTALLED_APPS = [
     'app.core.apps.CoreAppConfig',
     'app.channels.at.apps.AfricasTalkingChannelAppConfig',
     'app.channels.firebase.apps.FirebaseChannelAppConfig',
+    'app.channels.httpbin.apps.HTTPBINChannelAppConfig',
     'app.channels.smpp.apps.SMPPChannelAppConfig'
 ]
 
@@ -232,6 +233,9 @@ CELERY_ROUTES = {
     'firebase.push.send_message': {
         'queue': 'firebase.push.send_message'
     },
+    'httpbin.dummy.send_message': {
+        'queue': 'httpbin.dummy.send_message'
+    },
     'smpp.sms.send_message': {
         'queue': 'smpp.sms.send_message'
     },
@@ -253,3 +257,11 @@ CORS_ORIGIN_REGEX_WHITELIST = (
 # Africas Talking config
 AFRICAS_TALKING_USERNAME = "sandbox"
 AFRICAS_TALKING_API_KEY = "b10b95441d5900c9ffc76a92e4a7738e602a54ebee54adc7929a342f1278d8a5"
+
+# Redis
+REDIS_HOST = os.environ.get("REDIS_HOST", "localhost")
+REDIS_PORT = os.environ.get("REDIS_PORT", 6379)
+SMPP_OUTBOUND_QUEUE = "smpp-sms-outbound-queue"
+
+# HTTPBIN
+HTTPBIN_URL = os.environ.get("HTTPBIN_URL", "http://httpbin:8000")
