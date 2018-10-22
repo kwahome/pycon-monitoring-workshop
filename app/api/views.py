@@ -16,9 +16,9 @@ class HealthCheckView(BaseAPIView):
     running messaging service.
     """
     allowed_methods = (GET,)
-    event = 'health_check'
+    operation_tag = 'health_check'
 
-    def handle_request(self, request, *args, **kwargs):
+    def get_handler(self, request, *args, **kwargs):
         return self.respond()
 
 
@@ -28,96 +28,79 @@ class SendMessageView(BaseAPIView):
     """
     allowed_methods = (POST,)
     validator = SendMessageRequestSerializer
-    event = 'send_message'
+    operation_tag = 'send_message'
 
-    def handle_request(self, request, *args, **kwargs):
-        try:
-            self._init_variables()
-            self._init_message_request()
-            duplicate, response = self.duplicate_check()
-            if not duplicate:
-                response = self.route_task()
-        except Exception as e:
-            self.logger.exception(
-                '{0}_exception'.format(self.event),
-                exception=str(e.__class__.__name__),
-                message=str(e),
-                handler=self.__class__.__name__,
-            )
-            response = self.respond(
-                code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                data=dict(
-                    detail='An internal server error has occured.'
-                )
-            )
-        return response
+    def post_handler(self, request, *args, **kwargs):
+        self._init_variables()
+        self._init_message_request()
+        duplicate, response = self.duplicate_check()
+        return self.route_task() if not duplicate else response
 
     def _init_variables(self):
         self.message_id = self.req_data['messageId']
         self.channel = self.req_data["channel"]
         self.message_type = self.req_data["messageType"]
         self.sender_id = self.req_data["senderId"]
-        self.recipient_id = self.req_data["recipientId"]
+        self.recipients = self.req_data["recipients"]
         self.message = self.req_data["message"]
         self.priority = self.req_data["priority"]
+        self.callback = self.req_data.get("callback")
 
     def _init_message_request(self):
         self.message_obj = MessageRequest(
             message_id=self.message_id,
             data=dict(
-                sender_id=self.sender_id,
-                recipient_id=self.recipient_id,
-                message_type=self.message_type,
-                channel=self.channel,
-                message=self.message,
-                priority=self.priority
+                message=dict(
+                    sender_id=self.sender_id,
+                    # store as comma separated string of recipients
+                    recipients=",".join(self.recipients),
+                    message_type=self.message_type,
+                    channel=self.channel,
+                    message=self.message,
+                    priority=self.priority,
+                ),
+                status=dict(),
+                callback=dict(url=self.callback)
             )
         )
 
     def duplicate_check(self):
         result = False, None
         if get_object_or_None(MessageRequest, message_id=self.message_id):
-            message = "A message with messageId=`{0}` has already been " \
-                      "received".format(self.message_id)
-            self.logger.info(
-                '{0}_duplicate_message'.format(self.event),
-                details=message,
-                handler=self.__class__.__name__,
+            message = dict(
+                detail="A message with messageId=`{0}` has already been "
+                       "received".format(self.message_id)
             )
-            result = True, self.respond(
-                code=status.HTTP_409_CONFLICT,
-                data=dict(
-                    detail=message
-                )
-            )
+            result = True, self.http_conflicting_request(data=message)
         return result
 
     def route_task(self):
-        routing_handler = ROUTING_REGISTRY.get(
-            self.message_type, {}
-        ).get(self.channel)
-
+        tag = "routing"
+        routing_handler = ROUTING_REGISTRY.get(self.message_type, {}).get(
+            self.channel)
         if routing_handler is None:
             error_message = dict(
                 details="channel `{0}` and message type `{1}` not "
                         "supported".format(self.channel, self.message_type)
             )
             self.logger.info(
-                '{0}_routing_error'.format(self.event),
+                event='{0}_error'.format(tag),
                 message_obj=error_message,
                 handler=self.__class__.__name__,
             )
-            response = self.respond(
-                code=status.HTTP_400_BAD_REQUEST,
-                data=error_message
-            )
+            response = self.http_bad_request(data=error_message)
         else:
             self.message_obj.save()
             self.logger.info(
-                '{0}_routing_start'.format(self.event),
+                event='{0}_start'.format(tag),
                 message_id=self.message_id,
                 handler=self.__class__.__name__,
             )
             routing_handler(self.message_obj).route_task()
-            response = self.respond(code=status.HTTP_202_ACCEPTED)
+            self.logger.info(
+                event='{0}_end'.format(tag),
+                message_id=self.message_id,
+                handler=self.__class__.__name__,
+            )
+            response = self.http_request_accepted()
         return response

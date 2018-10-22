@@ -8,7 +8,9 @@ class SendMessageRequestSerializer(serializers.Serializer):
     """
     messageId = serializers.CharField(max_length=64, required=True)
     senderId = serializers.CharField(max_length=64, required=True)
-    recipientId = serializers.CharField(max_length=64, required=True)
+    recipients = serializers.ListField(
+        child=serializers.CharField(max_length=64), allow_empty=False
+    )
     messageType = serializers.ChoiceField(
         choices=MessageTypes.yield_choices(), required=True
     )

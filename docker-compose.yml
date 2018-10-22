@@ -34,6 +34,7 @@ services:
       - DB_PORT=5432
       - HTTPBIN_URL=http://httpbin:8000
       - BROKER_URL=amqp://guest:guest@rabbitmq:5672//
+      - GCLOUD_PROJECT=pycon-monitoring-workshop
     volumes:
       - ./:/usr/src/app
       - /app/static
@@ -66,6 +67,9 @@ services:
       - DB_PORT=5432
       - HTTPBIN_URL=http://httpbin:8000
       - BROKER_URL=amqp://guest:guest@rabbitmq:5672//
+      - GCLOUD_PROJECT=pycon-monitoring-workshop
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
     volumes:
       - ./:/usr/src/app
       - /app/static
@@ -105,7 +109,7 @@ services:
       - 9194:19999
 
   smpp-simulator:
-    image: komuw/smpp_server:v0.2
+    image: kwahome/smpp-smsc-sim:latest
     ports:
       - 2775:2775
       - 8884:8884

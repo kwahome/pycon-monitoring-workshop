@@ -1,0 +1,14 @@
+{
+    "smsc_host": "smpp-simulator",
+    "smsc_port": 2775,
+    "system_id": "smppclient1",
+    "password": "password",
+    "outboundqueue": "app.lib.smpp.naz_client.OutboundQueue",
+    "encoding": "gsm0338",
+    "loglevel": "INFO",
+    "log_metadata": {
+        "operation": "send_smpp_message"
+    },
+    "codec_errors_level": "ignore",
+    "enquire_link_interval": 30
+}

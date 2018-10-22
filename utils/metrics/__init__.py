@@ -17,6 +17,7 @@ def timer(name='timer', **ctx_kwargs):
     """
     Time-measuring decorator: the time spent in the wrapped block is measured
     and added to the named metric.
+
     :param name:
     :param ctx_kwargs:
     :return:

@@ -21,6 +21,7 @@ class ChoicesEnum(Enum):
 
 
 class MessageTypes(ChoicesEnum):
+    DUMMY = 'dummy'
     PUSH = 'push'
     SMS = 'sms'
 
@@ -28,6 +29,7 @@ class MessageTypes(ChoicesEnum):
 class MessageChannels(ChoicesEnum):
     AT = 'africas-talking'
     FIREBASE = 'firebase'
+    HTTPBIN = 'httpbin'
     SMPP = 'smpp'
 
 
@@ -106,9 +108,9 @@ class BaseModel(models.Model):
         Request was successfully `submitted` to message center/server and a
         response returned.
 
-        Can also transition from source=completed to accommodate for delivery
+        Can also transition from source=`delivered` to accommodate for delivery
         notifications from message center/server even after the task has
-        been `completed`
+        been `delivered`
         """
         return
 
@@ -122,7 +124,7 @@ class MessageRequest(BaseModel):
         db_index=True
     )
     data = JSONField(
-        default=dict(attempts=0)
+        default=dict(status=dict(attempts=0))
     )
     created_at = models.DateTimeField(auto_now_add=True)
     modified_at = models.DateTimeField(auto_now_add=True)

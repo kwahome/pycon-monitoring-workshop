@@ -1,4 +1,5 @@
 from app.core.tasks import BaseTaskHandler
+from app.lib.firebase.fcm import send_message
 
 
 class FirebasePushNotificationTaskHandler(BaseTaskHandler):
@@ -8,7 +9,11 @@ class FirebasePushNotificationTaskHandler(BaseTaskHandler):
     name = 'firebase.push.send_message'
     state_transition = True
     support_recon = True
-    event_name = 'send_push_notification'
+    operation_tag = 'send_push_notification'
 
     def execute(self, params):
-        return dict(status=200, data={})
+        results = send_message(
+            params.recipients.split(","), params.message,  dry_run=True
+        )
+        self.message_obj.data['status']['results'] = results
+        return results

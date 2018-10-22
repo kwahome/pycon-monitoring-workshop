@@ -66,3 +66,6 @@ stopwaitsecs=130
 killasgroup=true
 
 {% endfor %}
+
+[program:naz-smpp]
+command=naz-cli --config /usr/src/app/app/lib/smpp/naz_config.json
