@@ -6,13 +6,15 @@ services:
       dockerfile: ./devops/docker/Nginx.Dockerfile
     links:
       - web:web
+      - netdata:netdata
     volumes:
       - ./:/usr/src/app
     depends_on:
       - web
+      - netdata
     ports:
       - 80:80
-
+      - 9197:19999
   web:
     build:
       context: .
@@ -39,6 +41,7 @@ services:
       - /var/log/nginx
     ports:
       - 80
+      - 9191:19999
     links:
       - rabbitmq:rabbitmq
       - db:db
@@ -70,6 +73,7 @@ services:
       - /var/log/nginx
     ports:
       - 80
+      - 9192:19999
     links:
       - rabbitmq:rabbitmq
       - db:db
@@ -80,11 +84,15 @@ services:
     ports:
       - 5672:5672  # we forward this port because it's useful for debugging
       - 15672:15672  # here, we can access rabbitmq management plugin
+      - 9193:19999
 
   db:
-    image: postgres:9.5
+    build:
+      context: .
+      dockerfile: ./devops/docker/Postgres.Dockerfile
     ports:
       - 5433:5432
+      - 9196:19999
     environment:
       - POSTGRES_DB=messaging-service
       - POSTGRES_USER=messaging-service
@@ -94,12 +102,14 @@ services:
     image: redis:3.2.10-alpine
     ports:
       - 6379:6379
+      - 9194:19999
 
   smpp-simulator:
     image: komuw/smpp_server:v0.2
     ports:
       - 2775:2775
       - 8884:8884
+      - 9195:19999
 
   swagger-ui:
     build:
@@ -120,7 +130,9 @@ services:
       - 8000:8000
 
   netdata:
-    image: firehol/netdata
+    build:
+      context: .
+      dockerfile: ./devops/docker/Netdata.Dockerfile
     container_name: netdata
     ports:
       - 19999:19999
@@ -132,3 +144,4 @@ services:
       - /proc:/host/proc:ro
       - /sys:/host/sys:ro
       - /var/run/docker.sock:/var/run/docker.sock:ro
+
