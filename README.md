@@ -40,7 +40,7 @@ A sample payload to the notifications endpoint:
 }
 ```
 
-The API is also documented in a [swagger doc](https://github.com/kwahome/pycon-monitoring-workshop/blob/master/docs/api/swagger/send-message-1.0.yml)
+The API is also documented in a [swagger doc](https://github.com/kwahome/pycon-monitoring-workshop/blob/master/docs/api/swagger/send-message-1.0.yml) which can be rendered via a swagger ui available on `localhost` port `9001`
 
 Below are the overall architectural and sequence diagrams:
 
