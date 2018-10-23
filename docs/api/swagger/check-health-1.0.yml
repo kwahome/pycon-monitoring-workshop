@@ -9,8 +9,8 @@ info:
 host: "<HOST>"
 basePath: /api/v1.0/
 schemes:
-  - https
   - http
+  - https
 paths:
   /checkHealth:
     get:
@@ -23,6 +23,14 @@ paths:
         - application/json
       produces:
         - application/json
+      parameters:
+        - name: Authorization
+          in: header
+          description: API Key
+          schema:
+            type: string
+            example: api-key
+          required: true
       responses:
         '200':
           description: The message service can be reached successfully

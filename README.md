@@ -2,6 +2,7 @@
 [![Build Status](https://travis-ci.com/kwahome/pycon-monitoring-workshop.svg?branch=master)](https://travis-ci.com/kwahome/pycon-monitoring-workshop)
 [![codecov](https://codecov.io/gh/kwahome/pycon-monitoring-workshop/branch/master/graph/badge.svg)](https://codecov.io/gh/kwahome/pycon-monitoring-workshop)
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/ambv/black)
+
 ### Brief
 Reliability and stability of your services is highly dependent on understanding the state of your infrastructure and systems. Troubleshooting them effectively necessitates real-time performance, data presented at fine granularity.
 
@@ -17,22 +18,29 @@ Metrics, monitoring, and alerting are thus interleaved concepts that together fo
 - Important qualities of a Metrics, Monitoring, and Alerting System
 - Designing/architecting applications for monitoring & observability
 
-## Messaging Service
-To adequately demonstrate implementation of a monitoring system in a python application/service and to achieve the workshop's objectives, a messaging service has been built.
+## Messaging/Notification Service
+To adequately demonstrate implementation of a monitoring system in a Python application/service, a messaging service has been built.
 
-The service is designed to handle messages of varying kind (push, SMS) and priority and in varying quantities.
+The service is designed to handle messages of varying kind (push, SMS).
 
 A sample payload to the notifications endpoint:
 
 ```
 {
-    "recipient": "254725817350",
-    "message": "Demo test message 7",
-    "priority": "notification",
-    "type": "sms",
-    "sender_id": "88888"
+  "messageId": "y7sdxl24df",
+  "senderId": "0700123456",
+  "recipients": [
+    "0700987654"
+  ],
+  "messageType": "dummy",
+  "channel": "africas-talking",
+  "message": "This is an example message",
+  "priority": "normal",
+  "callback": "https://mydomain.com/callback/y7sdxl24df"
 }
 ```
+
+The API is also documented in a [swagger doc](https://github.com/kwahome/pycon-monitoring-workshop/blob/master/docs/api/swagger/send-message-1.0.yml)
 
 Below are the overall architectural and sequence diagrams:
 
@@ -61,13 +69,14 @@ Follow instructions in this [link](https://docs.docker.com/install/) for a guide
 
 - Clone the repository and navigate to the project root
 - Set up pre-commit hook by running this command from the project root
+
 ```
 pip install flake8 && cp devops/scripts/commit-checks.sh .git/hooks/pre-commit
 ```
 
 #### Start the app
 
-Run `docker-compose up` to fire up the notification service app & critical dependencies (database, rabbitmq)
+Run `docker-compose up` to fire up the notification service app & critical dependencies (database, rabbitmq, redis)
 
 Hit this url http://localhost:80/ to access the app. This will send a request to the nginx LB that in turn proxies it to the web server backends.
 
@@ -80,9 +89,11 @@ Hit this url http://localhost:80/ to access the app. This will send a request to
 #### Running Tests
 
 To run local tests, run
+
 ```
 docker-compose run app ./devops/scripts/run_test.sh
 ```
+
 Coverage reports will be written to htmlcov/index.html
 
 ## Contributing

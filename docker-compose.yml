@@ -120,7 +120,7 @@ services:
       context: .
       dockerfile: ./devops/docker/SwaggerUI.Dockerfile
     environment:
-      - SWAGGER_HOST=${APP_DOMAIN:-localhost}:8080
+      - SWAGGER_HOST=${APP_DOMAIN:-localhost}:80
       - API_URL=http://${APP_DOMAIN:-localhost}:${APP_PORT:-9001}/${FILE:-send-message}-1.0.yml
     ports:
       - 9001:8080
