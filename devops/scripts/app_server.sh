@@ -18,3 +18,4 @@ exec  gunicorn configuration.wsgi ${GUNICORN_BIND:- -b 0.0.0.0:80}\
          --error-logfile=error.log\
          --timeout 100\
          --reload
+exec netdata

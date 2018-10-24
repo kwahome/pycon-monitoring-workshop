@@ -23,11 +23,9 @@ RUN cd ~/netdata && ./netdata-installer.sh --dont-wait --dont-start-it
 
 COPY ./devops/netdata/stream.conf /etc/netdata/stream.conf
 COPY ./devops/netdata/web_log.conf /etc/netdata/python.d/web_log.conf
-COPY ./devops/netdata/messaging_application.conf /etc/netdata/python.d/messaging_application.conf
 
 RUN chmod 775 /etc/netdata/stream.conf
 RUN chmod 775 /etc/netdata/python.d/web_log.conf
-RUN chmod 775 /etc/netdata/python.d/messaging_application.conf
 
 
 EXPOSE 80
