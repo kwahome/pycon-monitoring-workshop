@@ -99,7 +99,7 @@ docker-compose run app ./devops/scripts/run_test.sh
 Coverage reports will be written to htmlcov/index.html
 
 ## Observability: Metrics, Monitoring, Alerting
-All metrics data from the nodes is streamed into the [netdata](https://github.com/kwahome/pycon-monitoring-workshop#messagingnotification-service) master from which it’s visualized (real-time analysis on netdata) & streamed to [prometheus](https://prometheus.io/) for storage (and further visualization with [grafana](https://grafana.com/)
+All metrics data from the nodes is streamed into the [netdata](https://github.com/netdata/netdata) master from which it’s visualized (real-time analysis on netdata) & streamed to [prometheus](https://prometheus.io/) for storage (and further visualization with [grafana](https://grafana.com/)
 
 The diagram below illustrates how netdata has been integrated
 
@@ -110,7 +110,10 @@ The diagram below illustrates how netdata has been integrated
 - https://www.scalyr.com/community/guides/zen-and-the-art-of-system-monitoring
 - https://opensource.com/article/18/4/metrics-monitoring-and-python
 - https://opensource.com/article/18/4/metrics-monitoring-and-python
-- https://prometheus.io/
+- [grafana](https://grafana.com/)
+- [netdata](https://github.com/netdata/netdata)
+- [netdata monitoring ephemeral nodes](https://github.com/netdata/netdata/tree/master/streaming#monitoring-ephemeral-nodes)
+- [prometheus](https://prometheus.io/)
 
 ## Contributing
 Please read [CONTRIBUTING.md](https://github.com/kwahome/pycon-monitoring-workshop/blob/master/CONTRIBUTING.md) for details on our code of conduct, and the process for submitting pull requests to us.
