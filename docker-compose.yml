@@ -160,6 +160,7 @@ services:
   prometheus:
     image: prom/prometheus:v2.1.0
     volumes:
+      - .devops/promitheus/prometheus.yml:/etc/prometheus/prometheus.yml
       - /prometheus
     ports:
       - 9090:9090
