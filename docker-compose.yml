@@ -157,3 +157,10 @@ services:
     volumes:
       - /var/lib/grafana
 
+  prometheus:
+    image: prom/prometheus:v2.1.0
+    volumes:
+      - /prometheus
+    ports:
+      - 9090:9090
+
