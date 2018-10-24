@@ -7,10 +7,10 @@ info:
   contact:
     email: kevowahome@gmail.com
 host: "<HOST>"
-basePath: /api/messages/v1.0/
+basePath: /api/v1.0/
 schemes:
-  - https
   - http
+  - https
 paths:
   /sendMessage:
     post:
@@ -24,6 +24,13 @@ paths:
       produces:
         - application/json
       parameters:
+        - name: Authorization
+          in: header
+          description: API Key
+          schema:
+            type: string
+            example: api-key
+          required: true
         - name: body
           in: body
           description: Submit message(s)
