@@ -1,0 +1,11 @@
+execution:
+- executor: locust
+  concurrency: 10
+  ramp-up: 30s
+  hold-for: 2m
+  scenario: messaging
+
+scenarios:
+    messaging-service:
+        default-address: http://localhost:80
+        script: task_set.py
