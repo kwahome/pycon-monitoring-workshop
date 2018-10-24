@@ -87,7 +87,9 @@ services:
       - httpbin:httpbin
 
   rabbitmq:
-    image: rabbitmq:3-management
+    build:
+      context: .
+      dockerfile: ./devops/docker/Rabbitmq.Dockerfile
     ports:
       - 5672:5672  # we forward this port because it's useful for debugging
       - 15672:15672  # here, we can access rabbitmq management plugin
@@ -106,7 +108,9 @@ services:
       - POSTGRES_PASSWORD=P@55w0rd
 
   redis:
-    image: redis:3.2.10-alpine
+    build:
+      context: .
+      dockerfile: ./devops/docker/Redis.Dockerfile
     ports:
       - 6379:6379
       - 9194:19999

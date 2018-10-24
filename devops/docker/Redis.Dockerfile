@@ -4,14 +4,13 @@ MAINTAINER Urandu Bildad
 
 
 RUN apk update
+RUN apk -U upgrade
 RUN add bash
-RUN apt-get install -y zlib1g-dev uuid-dev libmnl-dev gcc make autoconf autoconf-archive autogen automake pkg-config curl
-RUN apt-get install -y python python-yaml python-mysqldb python-psycopg2 nodejs lm-sensors netcat git
+RUN apk add autoconf automake bash build-base curl gawk git jq libuuid linux-headers musl-dev util-linux-dev libmnl-dev zlib-dev &&
 RUN git clone https://github.com/netdata/netdata.git --depth=1 ~/netdata
 RUN cd ~/netdata && ./netdata-installer.sh --dont-wait --dont-start-it
 
 COPY ./devops/netdata/stream.conf /etc/netdata/stream.conf
-COPY ./devops/netdata/postgres.conf /etc/netdata/python.d/postgres.conf
 
 RUN chmod 775 /etc/netdata/stream.conf
-RUN chmod 775 /etc/netdata/python.d/postgres.conf
+
