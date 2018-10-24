@@ -124,3 +124,5 @@ static/
 supervisord.log
 supervisord.pid
 supervisord.conf
+auto-commit.sh
+start-watcher.sh
