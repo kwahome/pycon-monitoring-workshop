@@ -155,7 +155,7 @@ services:
     ports:
       - 3000:3000
     links:
-      - influxdb
+
     volumes:
       - /var/lib/grafana
 
