@@ -9,6 +9,9 @@ services:
       - netdata:netdata
     volumes:
       - ./:/usr/src/app
+      - /proc:/host/proc:ro
+      - /sys:/host/sys:ro
+      - /var/run/docker.sock:/var/run/docker.sock:ro
     depends_on:
       - web
       - netdata
