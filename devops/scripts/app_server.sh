@@ -12,7 +12,7 @@ echo "$INFO_LOG_TAG starting web server..."
 # python3 manage.py runserver 0.0.0.0:80 --settings=$DJANGO_SETTINGS_MODULE
 exec  gunicorn configuration.wsgi ${GUNICORN_BIND:- -b 0.0.0.0:80}\
          --workers=${GUNICORN_WORKERS:-8}\
-         --log-level=info \
+         --log-level=DEBUG \
          --log-file=gunicorn.log\
          --access-logfile=access.log\
          --error-logfile=error.log\
