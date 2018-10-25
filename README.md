@@ -82,7 +82,7 @@ Run `docker-compose up` to fire up the notification service app & critical depen
 
 Open another terminal and run the below command to start netdata collectors 
 ```
-docker-compose exec worker  netdata  && docker-compose exec nginx  netdata  && docker-compose exec db  netdata && docker-compose exec web  netdata && docker-compose exec redis  netdata && docker-compose exec rabbitmq  netdata
+docker-compose exec worker  netdata  && docker-compose exec nginx  netdata  && docker-compose exec db  netdata && docker-compose exec web  netdata && docker-compose exec redis netdata && docker-compose exec rabbitmq netdata
 ```
 
 Hit this url http://localhost:80/ to access the app. This will send a request to the nginx LB that in turn proxies it to the web server backends.
